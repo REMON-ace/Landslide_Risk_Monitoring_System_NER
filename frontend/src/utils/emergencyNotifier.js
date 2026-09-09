@@ -111,8 +111,8 @@ class EmergencyNotifier {
 
       const options = {
         body: `${alert.message}\nRecommended Action: ${alert.recommended_action || 'Evacuate vulnerable slope corridors immediately.'}`,
-        icon: '/logo.svg',
-        badge: '/logo.svg',
+        icon: '/logo.png',
+        badge: '/logo.png',
         tag: `ner-alert-${alert.alert_id}`,
         requireInteraction: true,
         vibrate: [300, 100, 300, 100, 600],

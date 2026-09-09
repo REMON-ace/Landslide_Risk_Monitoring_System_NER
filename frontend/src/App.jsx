@@ -19,7 +19,8 @@ import CitizenMapPage     from './pages/citizen/CitizenMapPage';
 import CitizenReportsPage from './pages/citizen/CitizenReportsPage';
 import CitizenAlertsPage  from './pages/citizen/CitizenAlertsPage';
 
-// Auth pages
+// Auth & Public pages
+import LandingPage  from './pages/LandingPage';
 import LoginPage    from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
@@ -50,7 +51,7 @@ function AdminRoute({ children }) {
 function CitizenRoute({ children }) {
   const { isAuthenticated, isOfficial } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (isOfficial)       return <Navigate to="/" replace />;
+  if (isOfficial)       return <Navigate to="/dashboard" replace />;
   return children;
 }
 
@@ -66,6 +67,7 @@ export default function App() {
           <AuthProvider>
             <Routes>
               {/* ── Public routes ─────────────────────────────────────── */}
+              <Route path="/"         element={<LandingPage />} />
               <Route path="/login"    element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
@@ -83,7 +85,7 @@ export default function App() {
                 <Route path="/citizen/alerts"  element={<CitizenAlertsPage />} />
               </Route>
 
-              {/* ── Protected Admin Portal routes (wrapped in AdminLayout) */}
+              {/* ── Protected Admin Portal routes (wrapped in AdminLayout) ── */}
               <Route
                 element={
                   <AdminRoute>
@@ -91,15 +93,15 @@ export default function App() {
                   </AdminRoute>
                 }
               >
-                <Route path="/"        element={<DashboardPage />} />
-                <Route path="/map"     element={<MapPage />} />
-                <Route path="/report"  element={<FieldReportPage />} />
-                <Route path="/alerts"  element={<PublicAlertsPage />} />
-                <Route path="/predict" element={<PredictorPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/map"       element={<MapPage />} />
+                <Route path="/report"    element={<FieldReportPage />} />
+                <Route path="/alerts"    element={<PublicAlertsPage />} />
+                <Route path="/predict"   element={<PredictorPage />} />
               </Route>
 
-              {/* ── Catch-all: redirect unknown URLs to login ─────────── */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              {/* ── Catch-all: redirect unknown URLs to landing page ─── */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AuthProvider>
         </Router>
