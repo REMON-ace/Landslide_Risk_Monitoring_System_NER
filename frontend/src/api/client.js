@@ -647,3 +647,11 @@ export function logout() {
   localStorage.removeItem('auth_token');
   localStorage.removeItem('user_profile');
 }
+
+export async function predictRisk(features) {
+  return request('/predict-risk', {
+    method: 'POST',
+    body: JSON.stringify(features),
+    headers: { 'Content-Type': 'application/json' },
+  });
+}

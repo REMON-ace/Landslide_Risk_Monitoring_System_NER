@@ -24,31 +24,44 @@ def _next_report_id(db: Session) -> str:
     return f"FR-{1000 + count + 1}"
 
 
-import cloudinary
-import cloudinary.uploader
-from cloudinary.utils import cloudinary_url
+try:
+    import cloudinary
+    import cloudinary.uploader
+    from cloudinary.utils import cloudinary_url
 
-# Configure cloudinary using the settings
-cloudinary.config(
-    cloud_name=settings.cloudinary_cloud_name,
-    api_key=settings.cloudinary_api_key,
-    api_secret=settings.cloudinary_api_secret,
-    secure=True,
-)
+    if settings.cloudinary_cloud_name:
+        cloudinary.config(
+            cloud_name=settings.cloudinary_cloud_name,
+            api_key=settings.cloudinary_api_key,
+            api_secret=settings.cloudinary_api_secret,
+            secure=True,
+        )
+    HAS_CLOUDINARY = True
+except Exception:
+    HAS_CLOUDINARY = False
 
 def save_photo(file: UploadFile, report_id: str) -> str:
-    """Save uploaded photo to Cloudinary and return its public URL."""
-    if not settings.cloudinary_cloud_name:
-        raise ValueError("Cloudinary credentials not configured.")
-    
-    # Upload the file file.file to Cloudinary
-    upload_result = cloudinary.uploader.upload(
-        file.file,
-        public_id=f"landslide_reports/{report_id}",
-        overwrite=True
-    )
-    
-    return upload_result.get("secure_url")
+    """Save uploaded photo to Cloudinary (or local disk fallback) and return public URL."""
+    if HAS_CLOUDINARY and settings.cloudinary_cloud_name:
+        try:
+            upload_result = cloudinary.uploader.upload(
+                file.file,
+                public_id=f"landslide_reports/{report_id}",
+                overwrite=True
+            )
+            if upload_result.get("secure_url"):
+                return upload_result.get("secure_url")
+        except Exception as e:
+            print(f"[NOTE] Cloudinary upload failed, using local storage: {e}")
+
+    # Local storage fallback
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    ext = os.path.splitext(file.filename or "photo.jpg")[1] or ".jpg"
+    filename = f"{report_id}{ext}"
+    path = os.path.join(settings.upload_dir, filename)
+    with open(path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    return f"{settings.base_url}/uploads/{filename}"
 
 
 def create_report(
