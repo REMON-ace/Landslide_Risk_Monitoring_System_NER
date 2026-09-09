@@ -40,29 +40,106 @@ _MESSAGE_TEMPLATES = {
 }
 
 
-def _resolve_message(message_key: str, language: str) -> str:
+def _resolve_message(
+    message_key: str,
+    language: str,
+    zone_name: str = "",
+    zone_id: str = "",
+) -> str:
+
     lang_map = _MESSAGE_TEMPLATES.get(message_key, {})
-    return lang_map.get(language) or lang_map.get("en") or f"Alert: {message_key}"
+    template = lang_map.get(language) or lang_map.get("en")
+
+    if not template:
+        return f"Alert: {message_key}"
+
+    if message_key == "landslide_risk_critical":
+        return (
+            "⚠️ LANDSLIDE ALERT\n\n"
+            "CRITICAL: Imminent landslide risk detected.\n\n"
+            f"Location: {zone_name}\n"
+            f"Zone: {zone_id}\n\n"
+            "Evacuate immediately and follow official instructions."
+        )
+
+    if message_key == "landslide_risk_high":
+        return (
+            "⚠️ LANDSLIDE RISK ALERT\n\n"
+            "Heavy rainfall detected. High risk of slope failure.\n\n"
+            f"Location: {zone_name}\n"
+            f"Zone: {zone_id}\n\n"
+            "Avoid travel near landslide-prone areas."
+        )
+
+    return template
 
 
-def _mock_send(channels: List[str], zone_id_str: str, message: str, recipients_count: int) -> None:
-    """Log simulated send. Wire up Twilio here when keys are available."""
-    sid = settings.twilio_account_sid
-    if sid and settings.twilio_auth_token:
-        try:
-            from twilio.rest import Client
-            client = Client(sid, settings.twilio_auth_token)
-            if "sms" in channels:
-                logger.info("[TWILIO] Would send SMS to %d recipients: %s", recipients_count, message)
-        except ImportError:
-            logger.warning("twilio package not installed — falling back to mock")
-    else:
-        for channel in channels:
+def _mock_send(
+    channels: List[str],
+    zone_id_str: str,
+    message: str,
+    recipients_count: int,
+) -> None:
+    """Send real SMS through Twilio when SMS is enabled; otherwise mock."""
+
+    # Handle non-SMS channels as before
+    for channel in channels:
+        if channel != "sms":
             logger.info(
                 "[MOCK-%s] zone=%s recipients=%d | %s",
-                channel.upper(), zone_id_str, recipients_count, message
+                channel.upper(),
+                zone_id_str,
+                recipients_count,
+                message,
             )
 
+    # SMS not requested
+    if "sms" not in channels:
+        return
+
+    # Safety switch
+    if not getattr(settings, "sms_enabled", False):
+        logger.info(
+            "[SMS-DISABLED] zone=%s recipients=%d",
+            zone_id_str,
+            recipients_count,
+        )
+        return
+
+    # Demo recipient
+    recipient = getattr(settings, "sms_demo_recipient", "")
+
+    if not recipient:
+        logger.warning("[SMS-SKIPPED] No demo recipient configured.")
+        return
+
+    try:
+        from twilio.rest import Client
+
+        client = Client(
+            settings.twilio_account_sid,
+            settings.twilio_auth_token,
+        )
+
+        # Twilio Trial predefined template
+        sms = client.messages.create(
+            body="sms_event_notifications",
+            from_=settings.twilio_from_number,
+            to=recipient,
+        )
+
+        logger.info(
+            "[TWILIO] SMS accepted. zone=%s message_sid=%s",
+            zone_id_str,
+            sms.sid,
+        )
+
+    except Exception as e:
+        logger.exception(
+            "[TWILIO ERROR] zone=%s error=%s",
+            zone_id_str,
+            e,
+        )
 
 def _estimate_recipients(db: Session, zone_id_int: int) -> int:
     """Rough estimate: sum village populations in zone."""
@@ -85,7 +162,12 @@ def create_alert(db: Session, data: dict) -> dict:
 
     # Create one alert record per language (store primary language version)
     primary_lang = languages[0]
-    message = _resolve_message(data["message_key"], primary_lang)
+    message = _resolve_message(
+    data["message_key"],
+    primary_lang,
+    zone_name=f"{zone.village_name}, {zone.district}",
+    zone_id=data["zone_id"],
+)
 
     alert = Alert(
         alert_id=alert_id,

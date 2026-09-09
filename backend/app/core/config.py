@@ -9,9 +9,14 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 480
     upload_dir: str = "uploads"
     base_url: str = "http://localhost:8000"
+
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_from_number: str = ""
+
+    sms_enabled: bool = False       ##here before make this true to sending sms on number 
+    sms_demo_recipient: str = ""
+
     app_env: str = "development"
 
     class Config:
