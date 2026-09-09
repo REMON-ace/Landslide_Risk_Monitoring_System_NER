@@ -11,11 +11,12 @@ import {
   LogIn,
   Check,
   LayoutDashboard,
+  UserPlus,
 } from 'lucide-react';
 
 export default function LandingNavbar() {
   const { t, i18n } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isOfficial } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -78,8 +79,6 @@ export default function LandingNavbar() {
     { label: t('landing.nav.home', { defaultValue: 'Home' }), id: 'hero', type: 'scroll' },
     { label: t('landing.nav.about', { defaultValue: 'About' }), id: 'mission', type: 'scroll' },
     { label: t('landing.nav.live_risk_map', { defaultValue: 'Live Risk Map' }), id: 'risk-view', type: 'scroll' },
-    { label: t('landing.nav.alerts', { defaultValue: 'Alerts' }), to: '/alerts', type: 'route' },
-    { label: t('landing.nav.field_reports', { defaultValue: 'Field Reports' }), to: '/report', type: 'route' },
     { label: t('landing.nav.resources', { defaultValue: 'Resources' }), id: 'features', type: 'scroll' },
   ];
 
@@ -200,23 +199,24 @@ export default function LandingNavbar() {
               )}
             </div>
 
-            {/* Dark Green Login / Dashboard Button */}
-            <Link
-              to={isAuthenticated ? '/dashboard' : '/login'}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white font-bold text-xs shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer"
-            >
-              {isAuthenticated ? (
-                <>
-                  <LayoutDashboard className="w-3.5 h-3.5" />
-                  <span>{t('landing.nav.login_dashboard', { defaultValue: 'Login / Dashboard' })}</span>
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>{t('landing.nav.login_dashboard', { defaultValue: 'Login / Dashboard' })}</span>
-                </>
-              )}
-            </Link>
+            {/* Sign In & Sign Up Action Buttons */}
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 font-bold text-xs transition-all cursor-pointer"
+              >
+                <LogIn className="w-3.5 h-3.5 text-[#006B4F] dark:text-emerald-400" />
+                <span>Sign In</span>
+              </Link>
+
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white font-bold text-xs shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Sign Up</span>
+              </Link>
+            </div>
           </div>
 
           {/* ── Mobile Hamburger Button ───────────────────────── */}
@@ -278,15 +278,26 @@ export default function LandingNavbar() {
               </select>
             </div>
 
-            {/* Login / Dashboard Button for mobile */}
-            <Link
-              to={isAuthenticated ? '/dashboard' : '/login'}
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 rounded-lg bg-[#006B4F] text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>{t('landing.nav.login_dashboard', { defaultValue: 'Login / Dashboard' })}</span>
-            </Link>
+            {/* Mobile Sign In & Sign Up buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <LogIn className="w-3.5 h-3.5 text-[#006B4F]" />
+                <span>Sign In</span>
+              </Link>
+
+              <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 rounded-lg bg-[#006B4F] text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Sign Up</span>
+              </Link>
+            </div>
           </div>
         </div>
       )}

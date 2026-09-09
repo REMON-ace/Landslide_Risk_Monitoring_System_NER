@@ -1,7 +1,8 @@
 // Citizen Alerts Page — read-only view of active emergency alerts
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAlerts } from '../../api/client';
+import { getAlerts, getRiskZones } from '../../api/client';
+import AlertDetailModal from '../../components/AlertDetailModal';
 import {
   Bell, MapPin, Clock, Filter, AlertTriangle,
   CheckCircle2, Info, RefreshCw,
@@ -36,12 +37,20 @@ const SEVERITY_CONFIG = {
 
 export default function CitizenAlertsPage() {
   const [filterSeverity, setFilterSeverity] = useState('all');
+  const [selectedAlertForModal, setSelectedAlertForModal] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { data: alerts = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['citizen_alerts'],
     queryFn:  getAlerts,
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 60,
+  });
+
+  const { data: zones = [] } = useQuery({
+    queryKey: ['citizen_zones'],
+    queryFn: getRiskZones,
+    staleTime: 1000 * 60,
   });
 
   const filtered = alerts.filter(a =>
@@ -130,7 +139,11 @@ export default function CitizenAlertsPage() {
             return (
               <div
                 key={alert.alert_id}
-                className={`rounded-xl border p-4 space-y-3 transition-all ${cfg.card}`}
+                onClick={() => {
+                  setSelectedAlertForModal(alert);
+                  setIsDetailModalOpen(true);
+                }}
+                className={`rounded-xl border p-4 space-y-3 transition-all cursor-pointer hover:border-[#006B4F]/50 ${cfg.card}`}
               >
                 {/* Header row */}
                 <div className="flex items-center justify-between gap-2">
@@ -153,21 +166,14 @@ export default function CitizenAlertsPage() {
                 </p>
 
                 {/* Meta */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1 border-t border-black/5 dark:border-white/5">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 pt-1 border-t border-black/5 dark:border-white/5">
                   <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                    <MapPin className="w-3.5 h-3.5" />
+                    <MapPin className="w-3.5 h-3.5 text-[#006B4F]" />
                     {alert.village || alert.zone_id}
                   </span>
-                  <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                    <Clock className="w-3.5 h-3.5" />
-                    {new Date(alert.timestamp || alert.sent_at).toLocaleString()}
+                  <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+                    Click for description & location map →
                   </span>
-                  {alert.channels && (
-                    <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                      <Bell className="w-3.5 h-3.5" />
-                      via {Array.isArray(alert.channels) ? alert.channels.join(', ') : alert.channels}
-                    </span>
-                  )}
                 </div>
               </div>
             );
@@ -187,6 +193,13 @@ export default function CitizenAlertsPage() {
           <div><span className="font-bold">Ambulance:</span> 108</div>
         </div>
       </div>
+
+      <AlertDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        alert={selectedAlertForModal}
+        zones={zones}
+      />
     </div>
   );
 }

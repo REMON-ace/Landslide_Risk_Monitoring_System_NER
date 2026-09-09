@@ -74,7 +74,7 @@ export function AuthProvider({ children }) {
 
       // Redirect based on role — admins → dashboard, citizens → citizen portal
       if (isAdminRole(profile?.role)) {
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
       } else {
         navigate('/citizen', { replace: true });
       }

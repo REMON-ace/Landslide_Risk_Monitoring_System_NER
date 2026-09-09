@@ -130,14 +130,33 @@ def get_alerts(
 
     results = []
     for alert, zone in q.order_by(Alert.sent_at.desc()).all():
+        # Prefer alert-level lat/lng (stored from field reports) over zone geometry
+        lat = alert.lat if alert.lat is not None else None
+        lng = alert.lng if alert.lng is not None else None
+
+        # Fall back to zone geometry if alert doesn't have its own coordinates
+        if lat is None or lng is None:
+            if zone.geometry and "POINT(" in str(zone.geometry):
+                try:
+                    coords = str(zone.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                    lng, lat = float(coords[0]), float(coords[1])
+                except Exception:
+                    pass
+
         results.append({
             "alert_id": alert.alert_id,
             "village": zone.village_name,
             "zone_id": zone.zone_id,
-            "severity": alert.severity.value if alert.severity else "low",
+            "severity": alert.severity.value if hasattr(alert.severity, "value") else str(alert.severity) if alert.severity else "low",
             "message": alert.message,
+            "description": alert.description or alert.message,
             "language": alert.language,
+            "channels": alert.channels or [],
             "sent_via": alert.channels or [],
+            "sent_at": alert.sent_at,
             "timestamp": alert.sent_at,
+            "lat": lat,
+            "lng": lng,
         })
     return results
+

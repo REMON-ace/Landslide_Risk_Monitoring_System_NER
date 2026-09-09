@@ -141,6 +141,7 @@ class FieldReportOut(BaseModel):
     description: Optional[str]
     photo_url: Optional[str]
     status: str
+    severity: Optional[str] = "medium"
     reporter_type: str
     timestamp: datetime
 
@@ -151,11 +152,13 @@ class FieldReportOut(BaseModel):
 class FieldReportCreatedOut(BaseModel):
     report_id: str
     status: str
+    severity: Optional[str] = "medium"
     photo_url: Optional[str]
 
 
 class FieldReportPatchIn(BaseModel):
-    status: str  # "received" | "verified" | "dismissed"
+    status: Optional[str] = None    # "received" | "verified" | "dismissed"
+    severity: Optional[str] = None  # "low" | "medium" | "high" | "critical"
 
 
 # ---------------------------------------------------------------------------
@@ -164,13 +167,18 @@ class FieldReportPatchIn(BaseModel):
 
 class AlertOut(BaseModel):
     alert_id: str
-    village: str
+    village: Optional[str] = "Sohra"
     zone_id: str
     severity: str
     message: str
-    language: str
-    sent_via: List[str]
-    timestamp: datetime
+    description: Optional[str] = None
+    language: Optional[str] = "en"
+    sent_via: Optional[List[str]] = ["app"]
+    channels: Optional[List[str]] = ["app"]
+    timestamp: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -245,3 +253,14 @@ class LoginOut(BaseModel):
     token: str
     role: str
     district: Optional[str]
+
+# Registration schemas
+class UserRegisterIn(BaseModel):
+    username: str
+    password: str
+    district: Optional[str] = None
+    # proof file handled separately in endpoint
+
+class UserRegisterOut(BaseModel):
+    user_id: int
+    is_verified: bool = False

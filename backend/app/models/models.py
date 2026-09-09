@@ -13,6 +13,13 @@ from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
 from app.db.base import Base
+from app.db.session import engine
+
+
+def SpatialColumn(geom_type, srid=4326):
+    if engine.dialect.name == "sqlite":
+        return Text
+    return Geometry(geom_type, srid=srid)
 
 
 # ---------------------------------------------------------------------------
@@ -41,11 +48,13 @@ class ReportStatusEnum(str, enum.Enum):
     received = "received"
     verified = "verified"
     dismissed = "dismissed"
+    archived = "archived"
 
 
 class UserRoleEnum(str, enum.Enum):
     district_admin = "district_admin"
     field_official = "field_official"
+    citizen = "citizen"
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +67,7 @@ class Zone(Base):
     id = Column(Integer, primary_key=True, index=True)
     zone_id = Column(String(50), unique=True, nullable=False, index=True)
     village_name = Column(String(200), nullable=False)
-    geometry = Column(Geometry("POINT", srid=4326), nullable=False)
+    geometry = Column(SpatialColumn("POINT", srid=4326), nullable=False)
     district = Column(String(200), nullable=False)
     current_risk_score = Column(Float, default=0.0)
     current_severity = Column(Enum(SeverityEnum), default=SeverityEnum.low)
@@ -144,7 +153,7 @@ class Road(Base):
     road_id = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(300), nullable=False)
     status = Column(Enum(RoadStatusEnum), default=RoadStatusEnum.clear)
-    geometry = Column(Geometry("LINESTRING", srid=4326), nullable=False)
+    geometry = Column(SpatialColumn("LINESTRING", srid=4326), nullable=False)
     district = Column(String(200), nullable=True)
     last_updated = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
@@ -159,7 +168,7 @@ class Village(Base):
     id = Column(Integer, primary_key=True, index=True)
     village_id = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(200), nullable=False)
-    geometry = Column(Geometry("POINT", srid=4326), nullable=False)
+    geometry = Column(SpatialColumn("POINT", srid=4326), nullable=False)
     population = Column(Integer, default=0)
     zone_id = Column(String(50), ForeignKey("zones.zone_id", ondelete="SET NULL"), nullable=True, index=True)
 
@@ -183,6 +192,7 @@ class FieldReport(Base):
     reporter_type = Column(Enum(ReporterTypeEnum), default=ReporterTypeEnum.citizen)
     language = Column(String(20), default="en")
     status = Column(Enum(ReportStatusEnum), default=ReportStatusEnum.received)
+    severity = Column(Enum(SeverityEnum), default=SeverityEnum.medium, nullable=True)
     submitted_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -202,6 +212,9 @@ class Alert(Base):
     channels = Column(JSON, default=list)
     sent_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     recipients_count = Column(Integer, default=0)
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
+    description = Column(Text, nullable=True)
 
     zone = relationship("Zone", back_populates="alerts")
 
@@ -218,3 +231,6 @@ class User(Base):
     hashed_password = Column(String(300), nullable=False)
     role = Column(Enum(UserRoleEnum), default=UserRoleEnum.field_official)
     district = Column(String(200), nullable=True)
+    proof_path = Column(String(500), nullable=True)
+    is_verified = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

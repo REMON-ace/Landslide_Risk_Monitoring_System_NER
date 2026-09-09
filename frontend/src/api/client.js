@@ -12,7 +12,7 @@ import {
 } from '../mocks/mockData';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
-const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== 'false';
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 
 // Helper for local mock state persistence so official edits & citizen submissions remain interactive
 const getStoredState = (key, fallback) => {
@@ -279,6 +279,28 @@ export async function submitFieldReport(reportData) {
     reports.unshift(newReport);
     setStoredState('field_reports', reports);
 
+    // Also push a matching alert item into alerts mock state
+    const alerts = getStoredState('alerts', INITIAL_ALERTS);
+    const mockSev = reportData instanceof FormData ? (reportData.get('severity') || 'medium') : (reportData.severity || 'medium');
+    const newAlert = {
+      alert_id: `AL-${newId.replace('FR-', '')}`,
+      village: 'Sohra',
+      district: 'East Khasi Hills',
+      zone_id: 'RZ-SHILLONG-001',
+      severity: mockSev,
+      message: description || 'Hazard incident report submitted by field responder.',
+      details: description,
+      photo_url,
+      sent_via: ['field_report', 'app'],
+      channels: ['field_report', 'app'],
+      timestamp: new Date().toISOString(),
+      sent_at: new Date().toISOString(),
+      lat,
+      lng,
+    };
+    alerts.unshift(newAlert);
+    setStoredState('alerts', alerts);
+
     return {
       report_id: newId,
       status: 'received',
@@ -307,6 +329,10 @@ export async function submitFieldReport(reportData) {
 export async function getFieldReports(params = {}) {
   if (USE_MOCKS) {
     let reports = getStoredState('field_reports', INITIAL_FIELD_REPORTS);
+    // By default, hide archived (soft-deleted) reports from the review queue
+    if (!params.include_archived) {
+      reports = reports.filter((r) => r.status !== 'archived');
+    }
     if (params.status) {
       reports = reports.filter((r) => r.status === params.status);
     }
@@ -319,22 +345,52 @@ export async function getFieldReports(params = {}) {
 
 /**
  * PATCH /field-reports/{report_id}
- * Request: { status: "received" | "verified" | "dismissed" }
+ * Request: { status?: "received" | "verified" | "dismissed", severity?: "low" | "medium" | "high" | "critical" }
  * Protected endpoint
  */
-export async function updateFieldReportStatus(report_id, status) {
+export async function updateFieldReportStatus(report_id, status = null, severity = null) {
   if (USE_MOCKS) {
     const reports = getStoredState('field_reports', INITIAL_FIELD_REPORTS);
     const updated = reports.map((r) =>
-      r.report_id === report_id ? { ...r, status } : r
+      r.report_id === report_id
+        ? {
+            ...r,
+            ...(status ? { status } : {}),
+            ...(severity ? { severity } : {}),
+          }
+        : r
     );
     setStoredState('field_reports', updated);
     return updated.find((r) => r.report_id === report_id);
   }
 
+  const payload = {};
+  if (status) payload.status = status;
+  if (severity) payload.severity = severity;
+
   return request(`/field-reports/${encodeURIComponent(report_id)}`, {
     method: 'PATCH',
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * DELETE /field-reports/{report_id}
+ */
+export async function deleteFieldReport(report_id) {
+  if (USE_MOCKS) {
+    // Soft delete: set status to 'archived' instead of removing from storage
+    const reports = getStoredState('field_reports', INITIAL_FIELD_REPORTS);
+    const updatedReports = reports.map((r) =>
+      r.report_id === report_id ? { ...r, status: 'archived' } : r
+    );
+    setStoredState('field_reports', updatedReports);
+    return { success: true, status: 'archived' };
+  }
+
+  return request(`/field-reports/${encodeURIComponent(report_id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'archived' }),
   });
 }
 
@@ -527,13 +583,25 @@ export async function register(formData) {
       const username = formData.get('username') || 'new_resident';
       const district = formData.get('district') || 'East Khasi Hills';
       const fileObj = formData.get('proof');
-      const filename = fileObj ? fileObj.name : 'residency_proof.pdf';
-      const pending = getStoredState('pending_users', []);
+      let proofDataUrl = null;
+      if (fileObj && fileObj instanceof File && fileObj.type.startsWith('image/')) {
+        try {
+          proofDataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(fileObj);
+          });
+        } catch (e) {}
+      }
+
       const newUser = {
         id: Date.now(),
         username,
         district,
         proof_path: `/uploads/residency_proofs/${filename}`,
+        proof_type: fileObj ? `${fileObj.name} (${fileObj.type || 'Document'})` : 'Residency Proof Document',
+        proof_data_url: proofDataUrl,
         is_verified: false,
         created_at: new Date().toISOString(),
       };

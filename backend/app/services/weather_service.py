@@ -11,24 +11,39 @@ from sqlalchemy import func, cast
 from geoalchemy2 import Geography
 
 from app.models.models import Zone, WeatherReading, SoilSensor
+from app.db.session import engine
 
 
 def get_current_weather(db: Session, lat: float, lng: float) -> Optional[dict]:
     """
     Find the nearest zone to (lat, lng) and return its latest weather reading.
     """
-    # Find nearest zone by PostGIS distance
-    target = ST_SetSRID(ST_MakePoint(lng, lat), 4326)
+    if engine.dialect.name == "sqlite":
+        zones = db.query(Zone).all()
+        if not zones:
+            return None
+        def parse_pt(z):
+            if z.geometry and "POINT(" in str(z.geometry):
+                try:
+                    c = str(z.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                    return float(c[0]), float(c[1])
+                except Exception:
+                    pass
+            return 0.0, 0.0
+        zone = min(zones, key=lambda z: (parse_pt(z)[0] - lng)**2 + (parse_pt(z)[1] - lat)**2)
+    else:
+        # Find nearest zone by PostGIS distance
+        target = ST_SetSRID(ST_MakePoint(lng, lat), 4326)
 
-    zone_row = (
-        db.query(Zone, ST_X(Zone.geometry).label("z_lng"), ST_Y(Zone.geometry).label("z_lat"))
-        .order_by(ST_Distance(Zone.geometry, target))
-        .first()
-    )
-    if not zone_row:
-        return None
+        zone_row = (
+            db.query(Zone, ST_X(Zone.geometry).label("z_lng"), ST_Y(Zone.geometry).label("z_lat"))
+            .order_by(ST_Distance(Zone.geometry, target))
+            .first()
+        )
+        if not zone_row:
+            return None
 
-    zone, z_lng, z_lat = zone_row
+        zone, z_lng, z_lat = zone_row
 
     reading = (
         db.query(WeatherReading)

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { Activity, Bell, FileText, ArrowRight } from 'lucide-react';
 
 export default function FeaturesSection() {
   const { t } = useTranslation();
+  const { isAuthenticated, isOfficial } = useAuth();
 
   const features = [
     {
@@ -15,7 +17,7 @@ export default function FeaturesSection() {
           'Monitor rainfall, terrain and geospatial data to identify landslide-prone areas in real time.',
       }),
       linkText: t('landing.features.card1_link', { defaultValue: 'View Risk Map' }),
-      to: '/map',
+      to: isAuthenticated ? (isOfficial ? '/map' : '/citizen/map') : '/login',
       iconBg: 'bg-emerald-50 text-[#006B4F]',
     },
     {
@@ -26,7 +28,7 @@ export default function FeaturesSection() {
           'Receive timely alerts and safety information via SMS, mobile app and public channels.',
       }),
       linkText: t('landing.features.card2_link', { defaultValue: 'View Alerts' }),
-      to: '/alerts',
+      to: isAuthenticated ? (isOfficial ? '/alerts' : '/citizen/alerts') : '/login',
       iconBg: 'bg-amber-50 text-amber-700',
     },
     {
@@ -37,8 +39,8 @@ export default function FeaturesSection() {
           'Enable citizens and field officials to report landslides, road blockages and other hazards from the field.',
       }),
       linkText: t('landing.features.card3_link', { defaultValue: 'Submit a Report' }),
-      to: '/report',
-      iconBg: 'bg-teal-50 text-teal-700',
+      to: isAuthenticated ? (isOfficial ? '/report' : '/citizen/reports') : '/login',
+      iconBg: 'bg-blue-50 text-blue-700',
     },
   ];
 

@@ -14,8 +14,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from geoalchemy2.functions import ST_X, ST_Y
-from app.models.models import FieldReport, ReportStatusEnum, ReporterTypeEnum, Zone
+from app.models.models import FieldReport, ReportStatusEnum, ReporterTypeEnum, SeverityEnum, Zone, Alert
 from app.core.config import settings
+from app.db.session import engine
 
 
 def _next_report_id(db: Session) -> str:
@@ -44,6 +45,7 @@ def create_report(
     language: str,
     client_report_id: Optional[str],
     timestamp: Optional[datetime],
+    severity: Optional[str] = "medium",
 ) -> FieldReport:
     report_id = _next_report_id(db)
     report = FieldReport(
@@ -56,11 +58,37 @@ def create_report(
         reporter_type=ReporterTypeEnum(reporter_type) if reporter_type else ReporterTypeEnum.citizen,
         language=language or "en",
         status=ReportStatusEnum.received,
+        severity=SeverityEnum(severity) if severity else SeverityEnum.medium,
         submitted_at=timestamp or datetime.now(timezone.utc),
     )
     db.add(report)
     db.commit()
     db.refresh(report)
+
+    # Automatically create a corresponding Alert in the database so posted reports show in Alerts
+    try:
+        first_zone = db.query(Zone).first()
+        if first_zone:
+            alert_id = f"AL-{report_id.replace('FR-', '')}"
+            msg = description if description else f"Field hazard report submitted near ({lat:.4f}, {lng:.4f})."
+            alert = Alert(
+                alert_id=alert_id,
+                zone_id=first_zone.id,
+                severity=SeverityEnum(severity) if severity else SeverityEnum.medium,
+                message=msg,
+                description=description,
+                language=language or "en",
+                channels=["app", "field_report"],
+                sent_at=timestamp or datetime.now(timezone.utc),
+                recipients_count=150,
+                lat=lat,
+                lng=lng,
+            )
+            db.add(alert)
+            db.commit()
+    except Exception as e:
+        print(f"[NOTE] Auto alert creation skipped for {report_id}: {e}")
+
     return report
 
 
@@ -71,41 +99,78 @@ def get_reports(
     since: Optional[datetime] = None,
 ) -> List[dict]:
     q = db.query(FieldReport)
+    # By default, exclude archived (soft-deleted) reports from the review queue
     if status:
         try:
             status_enum = ReportStatusEnum(status)
             q = q.filter(FieldReport.status == status_enum)
         except ValueError:
             return []
+    else:
+        # No explicit status filter — hide archived
+        q = q.filter(FieldReport.status != ReportStatusEnum.archived)
     if since:
         q = q.filter(FieldReport.submitted_at >= since)
+
     if zone_id:
-        zone_coords = (
-            db.query(ST_X(Zone.geometry).label("lng"), ST_Y(Zone.geometry).label("lat"))
-            .filter(Zone.zone_id == zone_id)
-            .first()
-        )
-        if zone_coords:
-            z_lng, z_lat = zone_coords
-            # Approximate spatial filter: reports within ~15 km (~0.15 deg)
-            q = q.filter(
-                FieldReport.lat.between(z_lat - 0.15, z_lat + 0.15),
-                FieldReport.lng.between(z_lng - 0.15, z_lng + 0.15),
-            )
+        if engine.dialect.name == "sqlite":
+            zone = db.query(Zone).filter(Zone.zone_id == zone_id).first()
+            if zone and zone.geometry and "POINT(" in str(zone.geometry):
+                try:
+                    coords = str(zone.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                    z_lng, z_lat = float(coords[0]), float(coords[1])
+                    q = q.filter(
+                        FieldReport.lat.between(z_lat - 0.15, z_lat + 0.15),
+                        FieldReport.lng.between(z_lng - 0.15, z_lng + 0.15),
+                    )
+                except Exception:
+                    return []
+            else:
+                return []
         else:
-            return []
+            zone_coords = (
+                db.query(ST_X(Zone.geometry).label("lng"), ST_Y(Zone.geometry).label("lat"))
+                .filter(Zone.zone_id == zone_id)
+                .first()
+            )
+            if zone_coords:
+                z_lng, z_lat = zone_coords
+                # Approximate spatial filter: reports within ~15 km (~0.15 deg)
+                q = q.filter(
+                    FieldReport.lat.between(z_lat - 0.15, z_lat + 0.15),
+                    FieldReport.lng.between(z_lng - 0.15, z_lng + 0.15),
+                )
+            else:
+                return []
     reports = q.order_by(FieldReport.submitted_at.desc()).all()
     return [_report_to_dict(r) for r in reports]
 
 
-def patch_report(db: Session, report_id: str, status: str) -> Optional[dict]:
+def patch_report(db: Session, report_id: str, status: Optional[str] = None, severity: Optional[str] = None) -> Optional[dict]:
     report = db.query(FieldReport).filter(FieldReport.report_id == report_id).first()
     if not report:
         return None
-    report.status = ReportStatusEnum(status)
+    if status:
+        report.status = ReportStatusEnum(status)
+    if severity:
+        report.severity = SeverityEnum(severity)
+        # Also sync severity to corresponding auto-created Alert if present
+        try:
+            alert_id = f"AL-{report_id.replace('FR-', '')}"
+            alert = db.query(Alert).filter(Alert.alert_id == alert_id).first()
+            if alert:
+                alert.severity = SeverityEnum(severity)
+        except Exception as e:
+            print(f"[NOTE] Failed to sync alert severity for {report_id}: {e}")
     db.commit()
     db.refresh(report)
     return _report_to_dict(report)
+
+
+def _get_enum_val(val, default: str) -> str:
+    if not val:
+        return default
+    return val.value if hasattr(val, "value") else str(val)
 
 
 def _report_to_dict(r: FieldReport) -> dict:
@@ -115,8 +180,9 @@ def _report_to_dict(r: FieldReport) -> dict:
         "lng": r.lng,
         "description": r.description,
         "photo_url": r.photo_url,
-        "status": r.status.value if r.status else "received",
-        "reporter_type": r.reporter_type.value if r.reporter_type else "citizen",
+        "status": _get_enum_val(r.status, "received"),
+        "severity": _get_enum_val(r.severity, "medium"),
+        "reporter_type": _get_enum_val(r.reporter_type, "citizen"),
         "timestamp": r.submitted_at,
     }
 
@@ -158,3 +224,20 @@ def sync_reports(db: Session, items: List[dict]) -> dict:
             db.rollback()
             failed.append(client_id)
     return {"synced": synced, "failed": failed}
+
+
+def delete_report(db: Session, report_id: str) -> bool:
+    report = db.query(FieldReport).filter(FieldReport.report_id == report_id).first()
+    if not report:
+        return False
+
+    try:
+        # Also clean up matching alert record if one was created
+        alt_id = f"AL-{report_id.replace('FR-', '')}"
+        db.query(Alert).filter(Alert.alert_id.in_([report_id, alt_id])).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    db.delete(report)
+    db.commit()
+    return True

@@ -8,10 +8,33 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
+from app.db.session import engine
+from app.db.base import Base
+import app.models.models  # noqa: F401
 from app.routers import risk, weather, roads, reports, alerts, dashboard, auth, sync
 
-# Ensure upload directory exists
+from sqlalchemy import text
+
+# Ensure upload directory & database tables exist
 os.makedirs(settings.upload_dir, exist_ok=True)
+for table in Base.metadata.tables.values():
+    try:
+        table.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"Table creation note for {table.name}: {e}")
+
+# Automatically add missing columns for existing SQLite database
+with engine.connect() as conn:
+    try:
+        conn.execute(text("ALTER TABLE field_reports ADD COLUMN severity VARCHAR(50) DEFAULT 'medium'"))
+        conn.commit()
+    except Exception:
+        pass
+    try:
+        conn.execute(text("UPDATE field_reports SET severity = 'medium' WHERE severity IS NULL OR severity = ''"))
+        conn.commit()
+    except Exception:
+        pass
 
 app = FastAPI(
     title="NER Landslide Early Warning Platform — API",

@@ -11,6 +11,8 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
+import AlertDetailModal from '../components/AlertDetailModal';
+
 const SEVERITY_CONFIG = {
   critical: { color: 'bg-red-500', text: 'text-red-600 dark:text-red-400', badge: 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
   high:     { color: 'bg-orange-500', text: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
@@ -121,17 +123,53 @@ function ReportModal({ onClose, onSubmit }) {
   );
 }
 
+import { getAlerts, getRiskZones, submitFieldReport, getFieldReports } from '../api/client';
+
 export default function CitizenPortalPage() {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { isOnline } = useOfflineSync();
   const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedAlertForModal, setSelectedAlertForModal] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [activeTab, setActiveTab]   = useState('alerts');
 
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ['citizen_alerts'],
-    queryFn: getAlerts,
-    staleTime: 1000 * 30,
+    queryFn: async () => {
+      const [alertsData, reportsData] = await Promise.all([
+        getAlerts().catch(() => []),
+        getFieldReports().catch(() => []),
+      ]);
+      const combined = [...(alertsData || [])];
+      const existingIds = new Set(combined.map((a) => a.alert_id));
+
+      (reportsData || []).forEach((r) => {
+        const altId = `AL-${(r.report_id || '').replace('FR-', '')}`;
+        if (!existingIds.has(r.report_id) && !existingIds.has(altId)) {
+          combined.push({
+            alert_id: r.report_id,
+            village: r.village || 'Sohra',
+            district: r.district || 'East Khasi Hills',
+            zone_id: r.zone_id || 'RZ-FIELD-REPORT',
+            severity: r.severity || 'medium',
+            message: r.description || 'Ground hazard report submitted by field responder.',
+            description: r.description,
+            timestamp: r.timestamp || r.submitted_at || new Date().toISOString(),
+            lat: r.lat,
+            lng: r.lng,
+            photo_url: r.photo_url,
+          });
+        }
+      });
+      combined.sort(
+        (a, b) =>
+          new Date(b.timestamp || b.sent_at || Date.now()) -
+          new Date(a.timestamp || a.sent_at || Date.now())
+      );
+      return combined;
+    },
+    staleTime: 1000 * 15,
   });
 
   const { data: zones = [], isLoading: zonesLoading } = useQuery({
@@ -276,7 +314,14 @@ export default function CitizenPortalPage() {
               alerts.map((alert) => {
                 const cfg = SEVERITY_CONFIG[alert.severity] || SEVERITY_CONFIG.medium;
                 return (
-                  <div key={alert.alert_id} className="rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] p-4 space-y-2 shadow-xs">
+                  <div
+                    key={alert.alert_id}
+                    onClick={() => {
+                      setSelectedAlertForModal(alert);
+                      setIsDetailModalOpen(true);
+                    }}
+                    className="rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] p-4 space-y-2 shadow-xs cursor-pointer hover:border-[#006B4F]/50 transition-all group"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${cfg.color} animate-pulse shrink-0`} />
@@ -286,10 +331,10 @@ export default function CitizenPortalPage() {
                         {alert.severity}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-relaxed">{alert.message}</p>
+                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 leading-relaxed group-hover:text-[#006B4F] dark:group-hover:text-emerald-400 transition-colors">{alert.message}</p>
                     <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-[#D9E2DE]/60 dark:border-[#27272A]/60">
-                      <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{alert.village || alert.zone_id}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(alert.timestamp || alert.sent_at).toLocaleString()}</span>
+                      <span className="flex items-center gap-1 font-semibold text-slate-600 dark:text-zinc-300"><MapPin className="w-3 h-3 text-[#006B4F]" />{alert.village || alert.zone_id}</span>
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Click to view location map →</span>
                     </div>
                   </div>
                 );
@@ -356,6 +401,13 @@ export default function CitizenPortalPage() {
           onSubmit={handleSubmitReport}
         />
       )}
+
+      <AlertDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        alert={selectedAlertForModal}
+        zones={zones}
+      />
     </div>
   );
 }

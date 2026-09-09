@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, engine
 from app.models.models import Zone, WeatherReading, SoilSensor, RiskHistory, SeverityEnum
 from app.services.risk_service import stub_predict
 from geoalchemy2.functions import ST_X, ST_Y
@@ -28,7 +28,20 @@ from geoalchemy2.functions import ST_X, ST_Y
 def score_all_zones():
     db = SessionLocal()
     try:
-        zones = db.query(Zone, ST_X(Zone.geometry).label("lng"), ST_Y(Zone.geometry).label("lat")).all()
+        if engine.dialect.name == "sqlite":
+            zone_list = db.query(Zone).all()
+            zones = []
+            for z in zone_list:
+                lng, lat = 0.0, 0.0
+                if z.geometry and "POINT(" in str(z.geometry):
+                    try:
+                        c = str(z.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                        lng, lat = float(c[0]), float(c[1])
+                    except Exception:
+                        pass
+                zones.append((z, lng, lat))
+        else:
+            zones = db.query(Zone, ST_X(Zone.geometry).label("lng"), ST_Y(Zone.geometry).label("lat")).all()
         now = datetime.now(timezone.utc)
         updated = 0
 
