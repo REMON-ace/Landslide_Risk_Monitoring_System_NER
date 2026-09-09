@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.schemas import RiskZoneOut, PredictRiskIn, PredictRiskOut, RiskHistoryOut
 from app.services import risk_service
+from app.services.risk_model import predict_risk as ml_predict
 
 router = APIRouter()
 
@@ -25,10 +26,13 @@ def list_risk_zones(
 @router.post("/predict-risk", response_model=PredictRiskOut)
 def predict_risk(payload: PredictRiskIn):
     """
-    Stub endpoint — accepts all 12 ML features, returns a weighted mock score.
-    Replace the body of risk_service.stub_predict() when the real model is ready.
+    Run the trained landslide risk model and return a probability score + severity label.
     """
-    return risk_service.stub_predict(payload.model_dump())
+    try:
+        result = ml_predict(payload.model_dump())
+    except (FileNotFoundError, ValueError) as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    return result
 
 
 @router.get("/risk-zones/{zone_id}/history", response_model=RiskHistoryOut)
@@ -37,3 +41,4 @@ def zone_history(zone_id: str, db: Session = Depends(get_db)):
     if result is None:
         raise HTTPException(status_code=404, detail=f"Zone {zone_id} not found")
     return result
+
