@@ -34,7 +34,7 @@ export default function PredictorPage() {
     antecedent_rainfall_index: 145.7,
     soil_moisture: 0.61,
     dist_to_history: 0.8,
-    landslide_freq_district: 47,
+    landslide_density_5km: 2.0,
   };
 
   const [features, setFeatures] = useState(defaultFeatures);
@@ -81,6 +81,8 @@ export default function PredictorPage() {
         { key: 'elevation', label: 'Elevation Above Sea Level', min: 200, max: 2200, step: 10, unit: ' m', desc: 'Orographic lift zone' },
         { key: 'curvature', label: 'Terrain Curvature', min: -2, max: 2, step: 0.05, unit: '', desc: 'Negative = concave water convergence' },
         { key: 'dist_to_drainage', label: 'Distance to Natural Drainage', min: 10, max: 1000, step: 10, unit: ' m', desc: 'Gully toe erosion proximity' },
+        { key: 'dist_to_history', label: 'Distance to Historical Landslide', min: 0, max: 10, step: 0.1, unit: ' km', desc: 'Proximity to past failure zones' },
+        { key: 'landslide_density_5km', label: 'Landslide Density (5 km radius)', min: 0, max: 20, step: 0.5, unit: '', desc: 'Count of past landslides within 5 km' },
       ],
     },
   ];
