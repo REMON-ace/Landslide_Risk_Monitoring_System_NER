@@ -59,11 +59,11 @@ export default function Navbar() {
 
             {/* Emblem & Platform Title */}
             <Link to="/" className="flex items-center gap-3 sm:gap-3.5 group shrink-0">
-              <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-black border border-[#D9E2DE] dark:border-zinc-700 shadow-sm overflow-hidden">
+              <div className="relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-emerald-600/30 dark:border-emerald-700/50 shadow-sm overflow-hidden p-0.5">
                 <img
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="NER Landslide Early Warning"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  className="w-full h-full object-contain rounded-full group-hover:scale-105 transition-transform"
                 />
                 <span className="absolute w-2 h-2 rounded-full bg-[#E63946] top-1 right-1 animate-ping opacity-75"></span>
               </div>

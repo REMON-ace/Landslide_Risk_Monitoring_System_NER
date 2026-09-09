@@ -24,13 +24,13 @@ export default function LoginPage() {
   const [quickFillApplied, setQuickFillApplied] = useState(false);
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const targetPath =
     location.state?.from?.pathname && location.state.from.pathname !== '/login'
       ? location.state.from.pathname
-      : '/';
+      : '/dashboard';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,8 +77,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-2xl p-7 sm:p-9 shadow-xl space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2.5">
-          <div className="inline-flex p-2 rounded-2xl bg-black border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
-            <img src="/logo.svg" alt="NER LEWS Logo" className="w-12 h-12 object-cover rounded-xl" />
+          <div className="inline-flex p-1 rounded-full bg-white border border-emerald-600/30 dark:border-emerald-700/50 shadow-sm overflow-hidden">
+            <img src="/logo.png" alt="NER LEWS Logo" className="w-14 h-14 object-contain rounded-full" />
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">

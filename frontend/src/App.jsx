@@ -12,6 +12,7 @@ import FieldReportPage from './pages/FieldReportPage';
 import PublicAlertsPage from './pages/PublicAlertsPage';
 import PredictorPage from './pages/PredictorPage';
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ export default function App() {
           <AuthProvider>
             <Routes>
               {/* ── Public routes ─────────────────────────────────────── */}
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
 
               {/* ── Protected Admin Portal routes (wrapped in AdminLayout) */}
@@ -44,14 +46,14 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route path="/" element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/report" element={<FieldReportPage />} />
                 <Route path="/alerts" element={<PublicAlertsPage />} />
                 <Route path="/predict" element={<PredictorPage />} />
               </Route>
 
-              {/* ── Catch-all: redirect unknown URLs to dashboard ─── */}
+              {/* ── Catch-all: redirect unknown URLs to home ─── */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AuthProvider>

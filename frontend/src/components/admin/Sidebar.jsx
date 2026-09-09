@@ -35,8 +35,8 @@ export default function Sidebar({
   const handleNavClick = (path, hash) => {
     if (onClose) onClose();
     if (hash) {
-      if (location.pathname !== '/') {
-        navigate(`/${hash}`);
+      if (location.pathname !== '/dashboard') {
+        navigate(`/dashboard${hash}`);
       } else {
         const element = document.querySelector(hash);
         if (element) {
@@ -50,7 +50,7 @@ export default function Sidebar({
     {
       heading: 'Navigation',
       items: [
-        { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/map', label: 'Risk Map', icon: Map },
         { path: '/predict', label: 'Risk Predictor', icon: Cpu },
         { path: '/report', label: 'Field Reports', icon: FileText, badge: pendingReportCount > 0 ? pendingReportCount : null },
@@ -60,9 +60,9 @@ export default function Sidebar({
     {
       heading: 'Infrastructure & Sensors',
       items: [
-        { path: '/', hash: '#roads-section', label: 'Roads', icon: Route },
-        { path: '/', hash: '#priority-zones', label: 'Villages', icon: Home },
-        { path: '/', hash: '#weather-sensors', label: 'Weather & Sensors', icon: CloudRain },
+        { path: '/dashboard', hash: '#roads-section', label: 'Roads', icon: Route },
+        { path: '/dashboard', hash: '#priority-zones', label: 'Villages', icon: Home },
+        { path: '/dashboard', hash: '#weather-sensors', label: 'Weather & Sensors', icon: CloudRain },
       ],
     },
     {
@@ -70,7 +70,7 @@ export default function Sidebar({
       items: [
         { path: '/report', label: 'Reports Management', icon: ShieldCheck },
         { path: '/alerts', label: 'Alert Management', icon: Radio },
-        { path: '/', hash: '#risk-distribution', label: 'System Overview', icon: Activity },
+        { path: '/dashboard', hash: '#risk-distribution', label: 'System Overview', icon: Activity },
       ],
     },
   ];
@@ -97,13 +97,13 @@ export default function Sidebar({
         {/* Brand Header */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-[#D9E2DE] dark:border-[#1E1E24] shrink-0">
           <NavLink
-            to="/"
+            to="/dashboard"
             onClick={onClose}
             className={`flex items-center gap-3 overflow-hidden ${isCollapsed ? 'justify-center w-full' : ''}`}
             title="Landslide Risk Monitoring Portal"
           >
-            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-black border border-[#D9E2DE] dark:border-[#27272A] shrink-0 overflow-hidden shadow-sm">
-              <img src="/logo.svg" alt="NER LEWS" className="w-full h-full object-cover" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-emerald-600/30 dark:border-emerald-700/50 shrink-0 overflow-hidden shadow-xs p-0.5">
+              <img src="/logo.png" alt="NER LEWS" className="w-full h-full object-contain rounded-full" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
