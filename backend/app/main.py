@@ -39,6 +39,21 @@ with engine.connect() as conn:
         conn.commit()
     except Exception:
         pass
+    try:
+        conn.execute(text("ALTER TABLE users ADD COLUMN proof_path VARCHAR(500)"))
+        conn.commit()
+    except Exception:
+        pass
+    try:
+        conn.execute(text("ALTER TABLE alerts ADD COLUMN lat FLOAT"))
+        conn.commit()
+    except Exception:
+        pass
+    try:
+        conn.execute(text("ALTER TABLE alerts ADD COLUMN lng FLOAT"))
+        conn.commit()
+    except Exception:
+        pass
 
 app = FastAPI(
     title="NER Landslide Early Warning Platform — API",
@@ -60,6 +75,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
+        "https://landslide-risk-monitoring-system-ner.onrender.com",
     ],
     allow_origin_regex=r"https?://.*",
     allow_credentials=True,
