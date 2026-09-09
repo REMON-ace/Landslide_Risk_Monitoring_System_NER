@@ -29,11 +29,45 @@ def score_to_severity(score: float) -> str:
     return "low"
 
 
+from app.db.session import engine
+
+
 def get_all_zones(
     db: Session,
     district: Optional[str] = None,
     min_severity: Optional[str] = None,
 ) -> List[dict]:
+    if engine.dialect.name == "sqlite":
+        q = db.query(Zone)
+        if district:
+            q = q.filter(func.lower(Zone.district) == district.lower())
+        if min_severity:
+            order = ["low", "medium", "high", "critical"]
+            if min_severity in order:
+                idx = order.index(min_severity)
+                allowed = [SeverityEnum(s) for s in order[idx:]]
+                q = q.filter(Zone.current_severity.in_(allowed))
+
+        results = []
+        for zone in q.all():
+            lng, lat = 0.0, 0.0
+            if zone.geometry and "POINT(" in str(zone.geometry):
+                try:
+                    coords = str(zone.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                    lng, lat = float(coords[0]), float(coords[1])
+                except Exception:
+                    pass
+            results.append({
+                "zone_id": zone.zone_id,
+                "village_name": zone.village_name,
+                "lat": lat,
+                "lng": lng,
+                "risk_score": zone.current_risk_score,
+                "severity": zone.current_severity.value if zone.current_severity else "low",
+                "last_updated": zone.last_updated,
+            })
+        return results
+
     q = db.query(
         Zone,
         ST_X(Zone.geometry).label("lng"),

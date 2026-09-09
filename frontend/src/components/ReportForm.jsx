@@ -22,7 +22,8 @@ export default function ReportForm() {
   const { isOnline, refreshPendingCount } = useOfflineSync();
 
   const [description, setDescription] = useState('');
-  const [reporterType, setReporterType] = useState('citizen');
+  const [reporterType, setReporterType] = useState('official');
+  const [severity, setSeverity] = useState('medium');
   const [lat, setLat] = useState('25.2840');
   const [lng, setLng] = useState('91.7325');
   const [locationStatus, setLocationStatus] = useState('idle'); // idle | detecting | acquired | failed
@@ -127,6 +128,7 @@ export default function ReportForm() {
       lng: parseFloat(lng),
       description: description.trim(),
       reporter_type: reporterType,
+      severity,
       language: i18n.language || 'en',
       timestamp,
       photo_data: photoPreview,
@@ -138,6 +140,7 @@ export default function ReportForm() {
       formData.append('lng', lng);
       formData.append('description', description.trim());
       formData.append('reporter_type', reporterType);
+      formData.append('severity', severity);
       formData.append('language', i18n.language || 'en');
       formData.append('client_report_id', clientReportId);
       formData.append('timestamp', timestamp);
@@ -156,6 +159,7 @@ export default function ReportForm() {
         description: description.trim(),
         photo_url: res?.photo_url || photoPreview,
         status: 'received',
+        severity,
         reporter_type: reporterType,
         timestamp,
       });
@@ -265,20 +269,7 @@ export default function ReportForm() {
               <label className="block font-semibold text-[#1F2937] dark:text-zinc-300 mb-1.5">
                 {t('report_form.reporter_type')} <span className="text-[#E63946]">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setReporterType('citizen')}
-                  className={`py-2.5 px-3 rounded-xl border font-semibold flex items-center justify-center gap-2 transition-all ${
-                    reporterType === 'citizen'
-                      ? 'bg-[#006B4F] text-white border-[#006B4F] shadow-sm'
-                      : 'bg-slate-50 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-[#D9E2DE] dark:border-zinc-800'
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  <span>{t('report_form.citizen')}</span>
-                </button>
-
+              <div className="grid grid-cols-1 gap-2">
                 <button
                   type="button"
                   onClick={() => setReporterType('official')}
@@ -291,6 +282,34 @@ export default function ReportForm() {
                   <Shield className="w-4 h-4" />
                   <span>{t('report_form.official')}</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Severity Level Selection */}
+            <div>
+              <label className="block font-semibold text-[#1F2937] dark:text-zinc-300 mb-1.5">
+                Reported Severity Level <span className="text-[#E63946]">*</span>
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { key: 'critical', label: 'Critical', active: 'bg-red-600 text-white border-red-700' },
+                  { key: 'high',     label: 'High',     active: 'bg-orange-600 text-white border-orange-700' },
+                  { key: 'medium',   label: 'Medium',   active: 'bg-amber-600 text-white border-amber-700' },
+                  { key: 'low',      label: 'Low',      active: 'bg-emerald-600 text-white border-emerald-700' },
+                ].map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => setSeverity(s.key)}
+                    className={`py-2 px-2 rounded-xl border text-xs font-black transition-all uppercase ${
+                      severity === s.key
+                        ? `${s.active} shadow-md ring-2 ring-offset-1 ring-slate-400 dark:ring-zinc-600`
+                        : 'bg-slate-50 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-[#D9E2DE] dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
             </div>
 

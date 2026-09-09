@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getRiskZones, getRoads, getVillages, updateRoadStatus } from '../api/client';
+import { getRiskZones, getRoads, getVillages, getAlerts, updateRoadStatus } from '../api/client';
 import MapView from '../components/MapView';
 import ZoneDetailDrawer from '../components/ZoneDetailDrawer';
 import CreateAlertModal from '../components/CreateAlertModal';
@@ -10,26 +11,51 @@ import { Map, Search, ChevronRight, Filter, Radio, RefreshCw } from 'lucide-reac
 
 export default function MapPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [zones, setZones] = useState([]);
   const [roads, setRoads] = useState([]);
   const [villages, setVillages] = useState([]);
+  const [alerts, setAlerts] = useState([]);
   const [selectedZone, setSelectedZone] = useState(null);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [mapCenter, setMapCenter] = useState(null);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [zonesData, roadsData, villData] = await Promise.all([
+      const [zonesData, roadsData, villData, alertsData] = await Promise.all([
         getRiskZones(),
         getRoads(),
         getVillages(),
+        getAlerts().catch(() => []),
       ]);
-      setZones(zonesData || []);
+      const loadedZones = zonesData || [];
+      setZones(loadedZones);
       setRoads(roadsData || []);
       setVillages(villData || []);
+      setAlerts(alertsData || []);
+
+      // Check URL parameters for focus coordinates / zone selection
+      const paramLat = searchParams.get('lat') ? parseFloat(searchParams.get('lat')) : null;
+      const paramLng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')) : null;
+      const paramZoneId = searchParams.get('zone_id');
+
+      if (paramLat && paramLng) {
+        setMapCenter([paramLat, paramLng]);
+      }
+
+      if (paramZoneId) {
+        const found = loadedZones.find((z) => z.zone_id === paramZoneId);
+        if (found) {
+          setSelectedZone(found);
+          if (!paramLat || !paramLng) {
+            setMapCenter([found.lat, found.lng]);
+          }
+        }
+      }
     } catch (err) {
       console.error('Failed to load map data:', err);
     } finally {
@@ -135,10 +161,12 @@ export default function MapPage() {
             zones={filteredZones}
             roads={roads}
             villages={villages}
+            alerts={alerts}
             selectedZoneId={selectedZone?.zone_id}
             onSelectZone={(z) => setSelectedZone(z)}
             onUpdateRoadStatus={handleUpdateRoadStatus}
             height="660px"
+            center={mapCenter}
           />
         </div>
 

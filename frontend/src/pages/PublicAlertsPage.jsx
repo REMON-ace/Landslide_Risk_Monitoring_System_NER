@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getAlerts, getVillages, getRiskZones } from '../api/client';
+import { getAlerts, getVillages, getRiskZones, getFieldReports } from '../api/client';
 import { cacheData, getCachedData } from '../db/indexedDb';
 import AlertHistoryModal from '../components/AlertHistoryModal';
 import CreateAlertModal from '../components/CreateAlertModal';
+import AlertDetailModal from '../components/AlertDetailModal';
 import PageHeader from '../components/admin/PageHeader';
 import SectionCard from '../components/admin/SectionCard';
 import RiskBadge from '../components/admin/RiskBadge';
@@ -21,24 +22,33 @@ import {
   Info,
   CheckCircle2,
   XCircle,
+  MapPin,
+  Map,
 } from 'lucide-react';
+
+import { useAuth } from '../context/AuthContext';
 
 export default function PublicAlertsPage() {
   const { t } = useTranslation();
+  const { isOfficial } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [villages, setVillages] = useState([]);
   const [zones, setZones] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [selectedVillage, setSelectedVillage] = useState('all');
   const [selectedSeverity, setSelectedSeverity] = useState('all');
   const [isCached, setIsCached] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedAlertForModal, setSelectedAlertForModal] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   const loadAlerts = async () => {
     setIsLoading(true);
     try {
-      const [alertsData, villagesData, zonesData] = await Promise.all([
+      const [alertsData, villagesData, zonesData, reportsData] = await Promise.all([
         getAlerts().catch(async () => {
           const cached = await getCachedData('offline_alerts');
           if (cached) {
@@ -49,13 +59,46 @@ export default function PublicAlertsPage() {
         }),
         getVillages().catch(() => []),
         getRiskZones().catch(() => []),
+        getFieldReports().catch(() => []),
       ]);
 
-      setAlerts(alertsData || []);
+      const combined = [...(alertsData || [])];
+      const existingIds = new Set(combined.map((a) => a.alert_id));
+
+      (reportsData || []).forEach((r) => {
+        const altId = `AL-${(r.report_id || '').replace('FR-', '')}`;
+        if (!existingIds.has(r.report_id) && !existingIds.has(altId)) {
+          combined.push({
+            alert_id: r.report_id,
+            village: r.village || 'Sohra',
+            district: r.district || 'East Khasi Hills',
+            zone_id: r.zone_id || 'RZ-FIELD-REPORT',
+            severity: r.severity || 'medium',
+            message: r.description || 'Ground hazard report submitted by field responder.',
+            description: r.description,
+            details: r.description,
+            sent_via: ['field_report', 'app'],
+            channels: ['field_report', 'app'],
+            timestamp: r.timestamp || r.submitted_at || new Date().toISOString(),
+            sent_at: r.timestamp || r.submitted_at || new Date().toISOString(),
+            lat: r.lat,
+            lng: r.lng,
+            photo_url: r.photo_url,
+          });
+        }
+      });
+
+      combined.sort(
+        (a, b) =>
+          new Date(b.timestamp || b.sent_at || Date.now()) -
+          new Date(a.timestamp || a.sent_at || Date.now())
+      );
+
+      setAlerts(combined);
       setVillages(villagesData || []);
       setZones(zonesData || []);
-      if (Array.isArray(alertsData) && alertsData.length > 0) {
-        cacheData('offline_alerts', alertsData);
+      if (Array.isArray(combined) && combined.length > 0) {
+        cacheData('offline_alerts', combined);
       }
     } finally {
       setIsLoading(false);
@@ -66,14 +109,34 @@ export default function PublicAlertsPage() {
     loadAlerts();
   }, []);
 
+  const districtList = Array.from(
+    new Set([
+      'East Khasi Hills',
+      'West Khasi Hills',
+      'South West Khasi Hills',
+      'Ri-Bhoi',
+      'East Jaintia Hills',
+      'West Jaintia Hills',
+      'East Garo Hills',
+      'West Garo Hills',
+      'South Garo Hills',
+      'North Garo Hills',
+      'South West Garo Hills',
+      ...alerts.map((a) => a.district).filter(Boolean),
+      ...villages.map((v) => v.district).filter(Boolean),
+    ])
+  );
+
   const filteredAlerts = alerts.filter((a) => {
+    const matchesDistrict =
+      selectedDistrict === 'all' || (a.district || '').toLowerCase() === selectedDistrict.toLowerCase();
     const matchesVillage =
       selectedVillage === 'all' ||
       a.village === selectedVillage ||
       a.zone_id === selectedVillage;
     const matchesSeverity =
       selectedSeverity === 'all' || (a.severity || '').toLowerCase() === selectedSeverity;
-    return matchesVillage && matchesSeverity;
+    return matchesDistrict && matchesVillage && matchesSeverity;
   });
 
   const emergencyContacts = [
@@ -93,13 +156,15 @@ export default function PublicAlertsPage() {
         badge={`${filteredAlerts.length} Directives Issued`}
         actions={
           <>
-            <button
-              onClick={() => setIsCreateOpen(true)}
-              className="px-3.5 py-2 rounded-lg bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Broadcast Directive</span>
-            </button>
+            {isOfficial && (
+              <button
+                onClick={() => setIsCreateOpen(true)}
+                className="px-3.5 py-2 rounded-lg bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Broadcast Directive</span>
+              </button>
+            )}
 
             <button
               onClick={() => setIsHistoryOpen(true)}
@@ -131,6 +196,22 @@ export default function PublicAlertsPage() {
       {/* ── Filter Bar ─────────────────────────────────────────── */}
       <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] flex flex-wrap items-center gap-4 text-xs shadow-sm">
         <div className="flex items-center gap-2">
+          <span className="font-bold text-slate-700 dark:text-zinc-300">District:</span>
+          <select
+            value={selectedDistrict}
+            onChange={(e) => setSelectedDistrict(e.target.value)}
+            className="px-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-800 dark:text-zinc-200 font-medium focus:outline-none focus:border-[#006B4F]"
+          >
+            <option value="all">All Districts ({districtList.length})</option>
+            {districtList.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
           <span className="font-bold text-slate-700 dark:text-zinc-300">Sector / Village:</span>
           <select
             value={selectedVillage}
@@ -139,7 +220,9 @@ export default function PublicAlertsPage() {
           >
             <option value="all">All Villages & Sectors ({villages.length})</option>
             {villages.map((v) => (
-              <option key={v.village_id} value={v.name}>{v.name}</option>
+              <option key={v.village_id} value={v.name}>
+                {v.name} ({v.district || 'East Khasi Hills'})
+              </option>
             ))}
           </select>
         </div>
@@ -176,40 +259,95 @@ export default function PublicAlertsPage() {
                   No active emergency directives matching the selected criteria.
                 </div>
               ) : (
-                filteredAlerts.map((alert) => (
-                  <div
-                    key={alert.alert_id}
-                    className="p-5 rounded-xl border border-[#D9E2DE] dark:border-[#27272A] bg-white dark:bg-[#0D0E10] shadow-xs hover:border-[#006B4F]/40 transition-all space-y-3"
-                  >
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-xs font-bold text-slate-800 dark:text-white">
-                          {alert.alert_id}
-                        </span>
-                        <RiskBadge severity={alert.severity} />
-                        <span className="font-bold text-xs text-slate-800 dark:text-zinc-200">
-                          {alert.village || 'Sohra'} Sector
-                        </span>
+                filteredAlerts.map((alert) => {
+                  const imageUrl = alert.photo_url || alert.image_url || alert.image;
+                  const hasImage = Boolean(imageUrl);
+
+                  return (
+                    <div
+                      key={alert.alert_id}
+                      onClick={() => {
+                        setSelectedAlertForModal(alert);
+                        setIsDetailModalOpen(true);
+                      }}
+                      className="p-5 rounded-xl border border-[#D9E2DE] dark:border-[#27272A] bg-white dark:bg-[#0D0E10] shadow-xs hover:border-[#006B4F]/50 transition-all space-y-3 cursor-pointer group"
+                    >
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-mono text-xs font-bold text-slate-800 dark:text-white">
+                            {alert.alert_id}
+                          </span>
+                          <RiskBadge severity={alert.severity} />
+                          <span className="font-bold text-xs text-slate-800 dark:text-zinc-200">
+                            {alert.village || 'Sohra'} Sector ({alert.district || 'East Khasi Hills'})
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {new Date(alert.timestamp || alert.sent_at || Date.now()).toLocaleString([], {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
                       </div>
 
-                      <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {new Date(alert.timestamp).toLocaleString([], {
-                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
+                      {/* Main Message Headline */}
+                      <p className="text-sm font-black text-slate-900 dark:text-zinc-100 leading-snug group-hover:text-[#006B4F] dark:group-hover:text-emerald-400 transition-colors">
+                        {alert.message}
+                      </p>
 
-                    <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100 leading-relaxed">
-                      {alert.message}
-                    </p>
+                      {/* Detailed Description of the Problem */}
+                      {(alert.description || alert.details) && (
+                        <div className="p-3 rounded-lg bg-[#F5F7F6]/80 dark:bg-[#141418] border border-[#D9E2DE]/80 dark:border-zinc-800/80 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
+                          <strong className="block text-[10px] uppercase font-bold text-[#006B4F] dark:text-emerald-400 mb-1">
+                            Detailed Hazard Situation & Advisory:
+                          </strong>
+                          <p>{alert.description || alert.details}</p>
+                        </div>
+                      )}
 
-                    <div className="flex items-center justify-between pt-2.5 border-t border-[#D9E2DE]/70 dark:border-[#27272A]/70 text-[11px] text-slate-500 font-mono">
-                      <span>Configured Channels: {alert.sent_via?.join(' • ')?.toUpperCase() || 'APP • SMS'}</span>
-                      <span>Target Zone: {alert.zone_id}</span>
+                      {/* Image display if available */}
+                      {hasImage && (
+                        <div className="relative rounded-xl overflow-hidden border border-[#D9E2DE] dark:border-zinc-800 max-h-56 bg-black/10">
+                          <img
+                            src={imageUrl}
+                            alt="Hazard situation proof"
+                            className="w-full h-48 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPhoto(imageUrl);
+                            }}
+                          />
+                          <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-[10px] font-bold">
+                            Click to Enlarge
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-2.5 border-t border-[#D9E2DE]/70 dark:border-[#27272A]/70 text-[11px] text-slate-500 font-mono flex-wrap gap-2">
+                        <span>Configured Channels: {(alert.sent_via || alert.channels)?.join(' • ')?.toUpperCase() || 'APP • SMS'}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedAlertForModal(alert);
+                              setIsDetailModalOpen(true);
+                            }}
+                            className="px-3 py-1 rounded-lg bg-[#006B4F]/10 dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/20 font-bold text-xs hover:bg-[#006B4F] hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white transition-all flex items-center gap-1.5 shadow-xs"
+                          >
+                            <MapPin className="w-3.5 h-3.5" />
+                            <span>View Location on Map</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </SectionCard>
@@ -285,6 +423,13 @@ export default function PublicAlertsPage() {
       <AlertHistoryModal
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
+      />
+
+      <AlertDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        alert={selectedAlertForModal}
+        zones={zones}
       />
     </div>
   );

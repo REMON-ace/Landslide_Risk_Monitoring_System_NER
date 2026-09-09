@@ -13,7 +13,7 @@ const BACKEND_DEMO_CREDENTIALS = {
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isOfficial } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,10 +22,6 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quickFillApplied, setQuickFillApplied] = useState(false);
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   const targetPath =
     location.state?.from?.pathname && location.state.from.pathname !== '/login'
@@ -44,7 +40,7 @@ export default function LoginPage() {
         district: response?.district,
         hasToken: Boolean(response?.token),
       });
-      navigate(targetPath, { replace: true });
+      // Navigation is handled inside AuthContext.loginUser() based on role
     } catch (err) {
       // Clean error presentation for 401 or auth failures
       if (
@@ -152,8 +148,26 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Demo Credentials Quick Fill — Single District Admin option only */}
-        <div className="pt-4 border-t border-[#D9E2DE] dark:border-[#1E1E24] space-y-2">
+        {/* Residency Verification & Register Link */}
+        <div className="p-3.5 rounded-xl bg-[#EAF5F0] dark:bg-emerald-950/20 border border-[#006B4F]/20 dark:border-emerald-500/30 text-center space-y-2">
+          <div className="flex items-center justify-center gap-2 text-xs font-bold text-[#006B4F] dark:text-emerald-400">
+            <ShieldCheck className="w-4 h-4" />
+            <span>New Resident in Region?</span>
+          </div>
+          <p className="text-[11px] text-slate-600 dark:text-zinc-400">
+            To prevent spam reports, local residents must register with proof of residency (Aadhaar / Voter ID / Utility Bill).
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+            className="w-full py-2 px-3 rounded-lg bg-white dark:bg-[#141418] hover:bg-slate-50 dark:hover:bg-zinc-800 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/40 font-bold text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>Register with Residency Proof</span>
+          </button>
+        </div>
+
+        {/* Demo Credentials Quick Fill */}
+        <div className="pt-2 border-t border-[#D9E2DE] dark:border-[#1E1E24] space-y-2">
           <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 text-center">
             Quick fill demo credentials
           </p>

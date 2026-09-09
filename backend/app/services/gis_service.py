@@ -12,6 +12,22 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.models.models import Road, Village, Zone, RoadStatusEnum
+from app.db.session import engine
+
+
+def _parse_wkt_linestring(wkt: str) -> List[List[float]]:
+    if not wkt or "LINESTRING(" not in wkt:
+        return []
+    try:
+        clean = wkt.replace("LINESTRING(", "").replace(")", "").strip()
+        pts = clean.split(",")
+        coords = []
+        for p in pts:
+            parts = p.strip().split()
+            coords.append([float(parts[1]), float(parts[0])])
+        return coords
+    except Exception:
+        return []
 
 
 def _linestring_geojson_to_coords(geojson_str: Optional[str]) -> List[List[float]]:
@@ -27,7 +43,10 @@ def _linestring_geojson_to_coords(geojson_str: Optional[str]) -> List[List[float
 
 
 def _road_to_dict(road: Road, geojson_str: Optional[str] = None) -> dict:
-    coords = _linestring_geojson_to_coords(geojson_str)
+    if engine.dialect.name == "sqlite":
+        coords = _parse_wkt_linestring(str(road.geometry))
+    else:
+        coords = _linestring_geojson_to_coords(geojson_str)
     return {
         "road_id": road.road_id,
         "name": road.name,
@@ -42,6 +61,18 @@ def get_roads(
     district: Optional[str] = None,
     status: Optional[str] = None,
 ) -> List[dict]:
+    if engine.dialect.name == "sqlite":
+        q = db.query(Road)
+        if district:
+            q = q.filter(func.lower(Road.district) == district.lower())
+        if status:
+            try:
+                status_enum = RoadStatusEnum(status)
+                q = q.filter(Road.status == status_enum)
+            except ValueError:
+                return []
+        return [_road_to_dict(road) for road in q.all()]
+
     q = db.query(Road, ST_AsGeoJSON(Road.geometry).label("geojson"))
     if district:
         q = q.filter(func.lower(Road.district) == district.lower())
@@ -62,6 +93,10 @@ def patch_road(db: Session, road_id: str, status: str) -> Optional[dict]:
     road.last_updated = datetime.now(timezone.utc)
     db.commit()
     db.refresh(road)
+
+    if engine.dialect.name == "sqlite":
+        return _road_to_dict(road)
+
     # Fetch with GeoJSON
     row = db.query(Road, ST_AsGeoJSON(Road.geometry).label("geojson")).filter(
         Road.road_id == road_id
@@ -72,6 +107,27 @@ def patch_road(db: Session, road_id: str, status: str) -> Optional[dict]:
 
 
 def get_villages(db: Session) -> List[dict]:
+    if engine.dialect.name == "sqlite":
+        villages = db.query(Village).all()
+        results = []
+        for village in villages:
+            lng, lat = 0.0, 0.0
+            if village.geometry and "POINT(" in str(village.geometry):
+                try:
+                    c = str(village.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                    lng, lat = float(c[0]), float(c[1])
+                except Exception:
+                    pass
+            results.append({
+                "village_id": village.village_id,
+                "name": village.name,
+                "lat": lat,
+                "lng": lng,
+                "population": village.population,
+                "zone_id": village.zone_id,
+            })
+        return results
+
     rows = db.query(
         Village,
         ST_X(Village.geometry).label("lng"),

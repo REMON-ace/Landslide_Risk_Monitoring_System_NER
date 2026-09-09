@@ -24,20 +24,45 @@ from app.models.models import (
 )
 from app.core.security import hash_password
 
+from app.db.session import SessionLocal, engine
+
 # GeoAlchemy2 WKT helpers
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Point, LineString
 
 
 def make_point(lat: float, lng: float):
+    if engine.dialect.name == "sqlite":
+        return f"POINT({lng} {lat})"
     return from_shape(Point(lng, lat), srid=4326)
 
 
 def make_line(coords):  # coords = [(lat, lng), ...]
+    if engine.dialect.name == "sqlite":
+        pts = ", ".join(f"{lng} {lat}" for lat, lng in coords)
+        return f"LINESTRING({pts})"
     return from_shape(LineString([(lng, lat) for lat, lng in coords]), srid=4326)
 
 
 def seed(db: Session):
+    # -------------------------------------------------------------- Users --
+    USERS = [
+        dict(username="admin_shillong", password="Admin@1234", role=UserRoleEnum.district_admin, district="East Khasi Hills"),
+        dict(username="official_shillong", password="Admin@1234", role=UserRoleEnum.district_admin, district="East Khasi Hills"),
+        dict(username="field_sohra", password="Field@1234", role=UserRoleEnum.field_official, district="East Khasi Hills"),
+    ]
+    for u in USERS:
+        if not db.query(User).filter(User.username == u["username"]).first():
+            obj = User(
+                username=u["username"],
+                hashed_password=hash_password(u["password"]),
+                role=u["role"],
+                district=u["district"],
+                is_verified=True,
+            )
+            db.add(obj)
+    db.commit()
+
     # ---------------------------------------------------------------- Zones --
     # 10 realistic zones in East Khasi Hills
     ZONES = [

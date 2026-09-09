@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
 import { useTheme } from '../context/ThemeContext';
 import RiskHeatmap from './RiskHeatmap';
 import RoadOverlay from './RoadOverlay';
 import VillageMarkers from './VillageMarkers';
-import { Layers, Eye, EyeOff, Map, Satellite } from 'lucide-react';
+import AlertOverlay from './AlertOverlay';
+import { Layers, Eye, EyeOff, Map, Satellite, Bell } from 'lucide-react';
 
 /*
  * BASE TILE PROVIDERS — All free, clean, NO API KEY required.
@@ -49,14 +50,29 @@ const TILE_PROVIDERS = {
   },
 };
 
+import { useMap } from 'react-leaflet';
+
+function ChangeView({ center, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center && Array.isArray(center) && center.length === 2 && center[0] && center[1]) {
+      map.flyTo(center, zoom || 13, { duration: 1.2 });
+    }
+  }, [center, zoom, map]);
+  return null;
+}
+
 export default function MapView({
   zones = [],
   roads = [],
   villages = [],
+  alerts = [],
   selectedZoneId = null,
   onSelectZone,
   onUpdateRoadStatus,
   height = '500px',
+  center = null,
+  zoom = 11,
 }) {
   const { t } = useTranslation();
   const { isDark } = useTheme();
@@ -65,11 +81,13 @@ export default function MapView({
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showRoads, setShowRoads] = useState(true);
   const [showVillages, setShowVillages] = useState(true);
+  const [showAlerts, setShowAlerts] = useState(true);
 
   // Base map mode: 'standard' or 'satellite'
   const [baseMap, setBaseMap] = useState('standard');
 
   const defaultCenter = [25.32, 91.75]; // East Khasi Hills, Sohra-Shillong corridor
+  const activeCenter = center && center[0] && center[1] ? center : defaultCenter;
 
   // Choose tile config based on base map selection + theme
   const activeTile =
@@ -140,13 +158,33 @@ export default function MapView({
         </button>
 
         <button
+          onClick={() => setShowAlerts(!showAlerts)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium transition-all ${
+            showAlerts ? activeBtn : inactiveBtn
+          }`}
+        >
+          {showAlerts ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+          <span>Directives</span>
+          {alerts.length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-600 text-white text-[9px] font-extrabold animate-pulse shadow-xs">
+              {alerts.length} Active
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setShowRoads(!showRoads)}
-          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium transition-all ${
             showRoads ? activeBtn : inactiveBtn
           }`}
         >
           {showRoads ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
           <span>{t('map_view.road_corridors')}</span>
+          {roads.filter((r) => r.status === 'blocked' || r.status === 'partial').length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#E63946] text-white text-[9px] font-extrabold animate-pulse shadow-xs">
+              {roads.filter((r) => r.status === 'blocked' || r.status === 'partial').length} Blocked
+            </span>
+          )}
         </button>
 
         <button
@@ -194,27 +232,25 @@ export default function MapView({
           </div>
         </div>
 
-        <div className="pt-1.5 border-t border-[#D9E2DE] dark:border-zinc-800 flex items-center gap-3 text-[10px]">
-          <span className="flex items-center gap-1 text-slate-500 dark:text-zinc-400">
-            <span className="w-3 h-0.5 bg-[#008060] inline-block" /> {t('map_view.road_clear')}
+        <div className="pt-1.5 border-t border-[#D9E2DE] dark:border-zinc-800 flex flex-wrap items-center gap-2.5 text-[10px]">
+          <span className="flex items-center gap-1 font-bold text-purple-700 dark:text-purple-400">
+            <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse inline-block" /> 📡 Alert Directive
           </span>
-          <span className="flex items-center gap-1 text-slate-500 dark:text-zinc-400">
-            <span className="w-3 h-0.5 bg-yellow-500 inline-block" /> {t('map_view.road_partial')}
-          </span>
-          <span className="flex items-center gap-1 text-slate-500 dark:text-zinc-400">
-            <span className="w-3 h-0.5 bg-[#E63946] inline-block border-b border-dashed border-[#E63946]" /> {t('map_view.road_blocked')}
+          <span className="flex items-center gap-1 font-bold text-red-600 dark:text-red-400">
+            <span className="w-2 h-2 rounded-full bg-[#E63946] animate-pulse inline-block" /> 🚧 Road Blockage
           </span>
         </div>
       </div>
 
       {/* ── Leaflet Map Canvas ────────────────────────────────── */}
       <MapContainer
-        center={defaultCenter}
-        zoom={11}
+        center={activeCenter}
+        zoom={zoom}
         zoomControl={false}
         style={{ height, width: '100%' }}
         className="z-10"
       >
+        <ChangeView center={activeCenter} zoom={zoom} />
         {/*
           key={activeTile.url} forces a full TileLayer remount when switching
           between Standard and Satellite — ensures tiles reload cleanly.
@@ -249,6 +285,15 @@ export default function MapView({
           />
         )}
 
+        {/* Admin alerts & public directives overlay */}
+        {showAlerts && (
+          <AlertOverlay
+            alerts={alerts}
+            zones={zones}
+            onSelectZone={onSelectZone}
+          />
+        )}
+
         {/* Road corridors — visible in both standard + satellite */}
         {showRoads && (
           <RoadOverlay
@@ -265,3 +310,4 @@ export default function MapView({
     </div>
   );
 }
+

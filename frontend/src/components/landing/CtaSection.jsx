@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { ArrowRight, ShieldAlert, FileText } from 'lucide-react';
 
 export default function CtaSection() {
   const { t } = useTranslation();
+  const { isAuthenticated, isOfficial } = useAuth();
 
   return (
     <section
@@ -40,7 +42,7 @@ export default function CtaSection() {
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           {/* Primary Action: Emergency Red Button */}
           <Link
-            to="/map"
+            to={isAuthenticated ? (isOfficial ? '/map' : '/citizen/map') : '/login'}
             className="inline-flex items-center gap-2.5 px-7 py-4 rounded-xl bg-[#E63946] hover:bg-[#C92A37] text-white font-bold text-sm sm:text-base shadow-xl shadow-red-950/40 hover:shadow-red-700/50 transition-all duration-200 active:scale-[0.98] group cursor-pointer"
           >
             <ShieldAlert className="w-5 h-5" />
@@ -50,7 +52,7 @@ export default function CtaSection() {
 
           {/* Secondary Action: Dark / Transparent Style with White Border */}
           <Link
-            to="/report"
+            to={isAuthenticated ? (isOfficial ? '/report' : '/citizen/reports') : '/login'}
             className="inline-flex items-center gap-2.5 px-7 py-4 rounded-xl bg-black/40 hover:bg-black/60 text-white font-bold text-sm sm:text-base backdrop-blur-md border border-white/40 hover:border-white/70 transition-all duration-200 active:scale-[0.98] cursor-pointer group"
           >
             <FileText className="w-5 h-5 text-emerald-300" />

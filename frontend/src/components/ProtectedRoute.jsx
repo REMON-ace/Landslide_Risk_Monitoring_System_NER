@@ -27,9 +27,7 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  if (!isAuthenticated && !hasToken) {
-    // Replace the current history entry so the Back button
-    // cannot navigate back to the protected page.
+  if (!isAuthenticated) {
     return (
       <Navigate
         to="/login"

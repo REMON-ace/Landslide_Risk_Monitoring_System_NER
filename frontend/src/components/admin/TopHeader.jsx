@@ -22,6 +22,7 @@ import {
   Radio,
   MapPin,
   ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function TopHeader({
@@ -31,10 +32,11 @@ export default function TopHeader({
   zones = [],
   onOpenProfile,
   onOpenSettings,
+  onOpenVerification,
 }) {
   const { t, i18n } = useTranslation();
   const { isDark, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, isOfficial } = useAuth();
   const { isOnline } = useOfflineSync();
   const location = useLocation();
   const navigate = useNavigate();
@@ -101,7 +103,7 @@ export default function TopHeader({
     : [];
 
   return (
-    <header className="sticky top-0 z-30 w-full h-16 bg-white dark:bg-[#0D0E10] border-b border-[#D9E2DE] dark:border-[#27272A] shadow-xs flex items-center justify-between px-4 sm:px-6 transition-colors">
+    <header className="sticky top-0 z-40 w-full h-16 bg-white dark:bg-[#0D0E10] border-b border-[#D9E2DE] dark:border-[#27272A] shadow-xs flex items-center justify-between px-4 sm:px-6 transition-colors">
       {/* ── Left: Sidebar Toggle & Breadcrumbs ───────────────────────── */}
       <div className="flex items-center gap-3 min-w-0">
         <button
@@ -193,6 +195,18 @@ export default function TopHeader({
           <Database className="w-3.5 h-3.5" />
           <span>Connected to GIS Database</span>
         </div>
+
+        {/* Verify Residents Button (Admin only) */}
+        {isOfficial && onOpenVerification && (
+          <button
+            onClick={onOpenVerification}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#EAF5F0] text-[#006B4F] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#006B4F]/30 hover:bg-[#d5ebe0] transition-all cursor-pointer shadow-2xs"
+            title="Review pending resident registration applications & residency proof"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Verify Residents</span>
+          </button>
+        )}
 
         {/* Telemetry Status (Online/Offline) */}
         <div

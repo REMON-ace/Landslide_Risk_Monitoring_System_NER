@@ -4,18 +4,29 @@ import { login as apiLogin, logout as apiLogout } from '../api/client';
 
 const AuthContext = createContext();
 
+/** Roles that have admin/official access */
+const ADMIN_ROLES = new Set(['district_admin', 'field_official', 'District Admin', 'admin', 'official']);
+
+function isAdminRole(role) {
+  return ADMIN_ROLES.has(role);
+}
+
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(() => {
     try {
-      // Only restore user if the auth_token is also present — both must exist
       const token = localStorage.getItem('auth_token');
       const saved = localStorage.getItem('user_profile');
-      if (token && saved) {
-        return JSON.parse(saved);
+      if (token) {
+        if (saved) {
+          return JSON.parse(saved);
+        }
+        // Fallback default — treated as admin so admin layout shows
+        const defaultProfile = { token, role: 'district_admin', district: 'East Khasi Hills' };
+        localStorage.setItem('user_profile', JSON.stringify(defaultProfile));
+        return defaultProfile;
       }
-      // Token missing — clear any stale profile that may have been left
       localStorage.removeItem('user_profile');
       return null;
     } catch {
@@ -60,11 +71,19 @@ export function AuthProvider({ children }) {
     try {
       const profile = await apiLogin(username, password);
       setUser(profile);
+
+      // Redirect based on role — admins → dashboard, citizens → citizen portal
+      if (isAdminRole(profile?.role)) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/citizen', { replace: true });
+      }
+
       return profile;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   const logoutUser = useCallback(() => {
     // 1. Clear all tokens and session data from localStorage
@@ -72,6 +91,7 @@ export function AuthProvider({ children }) {
 
     // 2. Clear any other auth-adjacent cached data stored during session
     localStorage.removeItem('my_local_reports');
+    localStorage.removeItem('user_view_mode');
     try {
       sessionStorage.clear();
     } catch (e) {}
@@ -83,13 +103,13 @@ export function AuthProvider({ children }) {
     window.location.replace('/login');
   }, []);
 
-  const isOfficial = Boolean(user && (user.role === 'district_admin' || user.role === 'official'));
+  const isOfficial = Boolean(user && isAdminRole(user.role));
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: Boolean(user || (typeof window !== 'undefined' && localStorage.getItem('auth_token'))),
+        isAuthenticated: Boolean(user),
         isOfficial,
         isLoading,
         login: loginUser,

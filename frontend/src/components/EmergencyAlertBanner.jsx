@@ -179,7 +179,7 @@ export default function EmergencyAlertBanner() {
       <div
         role="alert"
         aria-live="assertive"
-        className={`relative w-full z-40 border-b shadow-2xl transition-all ${
+        className={`relative w-full z-20 border-b shadow-2xl transition-all ${
           isCritical
             ? 'bg-[#180407] border-red-600 text-white'
             : 'bg-[#1a0c02] border-amber-500 text-white'

@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
+import { MapPin, Phone, Mail, Globe, ShieldCheck } from 'lucide-react';
 
 export default function LandingFooter() {
   const { t } = useTranslation();
+  const { isAuthenticated, isOfficial } = useAuth();
 
   const scrollToSection = (sectionId) => {
     const el = document.getElementById(sectionId);
@@ -69,7 +72,7 @@ export default function LandingFooter() {
               </li>
               <li>
                 <Link
-                  to="/map"
+                  to={isAuthenticated ? (isOfficial ? '/map' : '/citizen/map') : '/login'}
                   className="text-slate-600 hover:text-[#006B4F] transition-colors"
                 >
                   {t('landing.footer.link_risk_map', { defaultValue: 'Risk Map' })}
@@ -77,7 +80,7 @@ export default function LandingFooter() {
               </li>
               <li>
                 <Link
-                  to="/alerts"
+                  to={isAuthenticated ? (isOfficial ? '/alerts' : '/citizen/alerts') : '/login'}
                   className="text-slate-600 hover:text-[#006B4F] transition-colors"
                 >
                   {t('landing.footer.link_alerts', { defaultValue: 'Alerts' })}
@@ -85,7 +88,7 @@ export default function LandingFooter() {
               </li>
               <li>
                 <Link
-                  to="/report"
+                  to={isAuthenticated ? (isOfficial ? '/report' : '/citizen/reports') : '/login'}
                   className="text-slate-600 hover:text-[#006B4F] transition-colors"
                 >
                   {t('landing.footer.link_field_reports', { defaultValue: 'Field Reports' })}

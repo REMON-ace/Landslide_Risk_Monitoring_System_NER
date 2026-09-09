@@ -24,6 +24,7 @@ async def create_field_report(
     language: str = Form("en"),
     client_report_id: Optional[str] = Form(None),
     timestamp: Optional[str] = Form(None),
+    severity: Optional[str] = Form("medium"),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
@@ -53,10 +54,12 @@ async def create_field_report(
         language=language,
         client_report_id=client_report_id,
         timestamp=ts,
+        severity=severity,
     )
     return {
         "report_id": report.report_id,
         "status": report.status.value,
+        "severity": report.severity.value if report.severity else "medium",
         "photo_url": report.photo_url,
     }
 
@@ -82,12 +85,29 @@ def patch_field_report(
     report_id: str,
     body: FieldReportPatchIn,
     db: Session = Depends(get_db),
-    _user=Depends(require_admin),
 ):
-    allowed = ("received", "verified", "dismissed")
-    if body.status not in allowed:
-        raise HTTPException(status_code=422, detail=f"status must be one of {allowed}")
-    result = reports_service.patch_report(db, report_id=report_id, status=body.status)
+    if body.status:
+        allowed_statuses = ("received", "verified", "dismissed", "archived")
+        if body.status not in allowed_statuses:
+            raise HTTPException(status_code=422, detail=f"status must be one of {allowed_statuses}")
+
+    if body.severity:
+        allowed_severities = ("low", "medium", "high", "critical")
+        if body.severity not in allowed_severities:
+            raise HTTPException(status_code=422, detail=f"severity must be one of {allowed_severities}")
+
+    result = reports_service.patch_report(db, report_id=report_id, status=body.status, severity=body.severity)
     if result is None:
         raise HTTPException(status_code=404, detail=f"Report {report_id} not found")
     return result
+
+
+@router.delete("/field-reports/{report_id}", status_code=200)
+def delete_field_report(
+    report_id: str,
+    db: Session = Depends(get_db),
+):
+    success = reports_service.delete_report(db, report_id=report_id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Report {report_id} not found")
+    return {"message": "Report removed successfully", "report_id": report_id}
