@@ -490,19 +490,16 @@ export async function syncFieldReports(reportsList) {
  */
 export async function login(username, password) {
   if (USE_MOCKS) {
-    if (username === 'official_shillong' || username === 'admin' || username.length > 0) {
-      const mockAuth = {
-        token: `mock-jwt-token-ner-${Date.now()}`,
-        role: 'district_admin',
-        district: 'East Khasi Hills',
-      };
-      localStorage.setItem('auth_token', mockAuth.token);
-      localStorage.setItem('user_profile', JSON.stringify(mockAuth));
-      return mockAuth;
-    }
-    const err = new Error('Invalid username or password');
-    err.status = 401;
-    throw err;
+    const isAdmin = username === 'admin_shillong' || username === 'official_shillong' || username === 'admin';
+    const mockAuth = {
+      token: `mock-jwt-token-ner-${Date.now()}`,
+      role: isAdmin ? 'district_admin' : 'citizen',
+      district: 'East Khasi Hills',
+      username,
+    };
+    localStorage.setItem('auth_token', mockAuth.token);
+    localStorage.setItem('user_profile', JSON.stringify(mockAuth));
+    return mockAuth;
   }
 
   const result = await request('/auth/login', {
@@ -516,6 +513,66 @@ export async function login(username, password) {
   }
 
   return result;
+}
+
+export async function register(formData) {
+  if (USE_MOCKS) {
+    try {
+      const result = await request('/auth/register', {
+        method: 'POST',
+        body: formData,
+      });
+      return result;
+    } catch (e) {
+      const username = formData.get('username') || 'new_resident';
+      const district = formData.get('district') || 'East Khasi Hills';
+      const fileObj = formData.get('proof');
+      const filename = fileObj ? fileObj.name : 'residency_proof.pdf';
+      const pending = getStoredState('pending_users', []);
+      const newUser = {
+        id: Date.now(),
+        username,
+        district,
+        proof_path: `/uploads/residency_proofs/${filename}`,
+        is_verified: false,
+        created_at: new Date().toISOString(),
+      };
+      pending.unshift(newUser);
+      setStoredState('pending_users', pending);
+      return { user_id: newUser.id, is_verified: false };
+    }
+  }
+
+  return request('/auth/register', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+export async function getPendingUsers() {
+  if (USE_MOCKS) {
+    try {
+      const data = await request('/auth/pending-users');
+      if (Array.isArray(data)) return data;
+    } catch (e) {}
+    return getStoredState('pending_users', []);
+  }
+  return request('/auth/pending-users');
+}
+
+export async function verifyUser(userId) {
+  if (USE_MOCKS) {
+    try {
+      return await request(`/auth/verify-user/${userId}`, { method: 'POST' });
+    } catch (e) {}
+    const pending = getStoredState('pending_users', []);
+    const updated = pending.filter((u) => u.id !== userId);
+    setStoredState('pending_users', updated);
+    return { status: 'success' };
+  }
+  return request(`/auth/verify-user/${userId}`, {
+    method: 'POST',
+  });
 }
 
 export function logout() {

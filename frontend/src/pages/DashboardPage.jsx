@@ -11,6 +11,7 @@ import {
   getSoilMoisture,
   updateRoadStatus,
 } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import SummaryCards from '../components/SummaryCards';
 import MapView from '../components/MapView';
 import ZoneDetailDrawer from '../components/ZoneDetailDrawer';
@@ -90,6 +91,7 @@ function CardHeader({ title, kicker, badge, action }) {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const mapSectionRef = useRef(null);
+  const { isOfficial } = useAuth();
 
   const [summary, setSummary] = useState(null);
   const [zones, setZones] = useState([]);
@@ -100,6 +102,7 @@ export default function DashboardPage() {
   const [weather, setWeather] = useState(null);
   const [soilSensors, setSoilSensors] = useState([]);
   const [selectedZone, setSelectedZone] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
 
   // Modals state
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
@@ -162,15 +165,21 @@ export default function DashboardPage() {
     mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // District filtered zones
+  const filteredZones = zones.filter((z) => {
+    if (selectedDistrict === 'all') return true;
+    return (z.district || '').toLowerCase() === selectedDistrict.toLowerCase();
+  });
+
   // Severity counts computed directly from active zone dataset
   const severityCounts = {
-    critical: zones.filter((z) => z.severity?.toLowerCase() === 'critical').length,
-    high: zones.filter((z) => z.severity?.toLowerCase() === 'high').length,
-    medium: zones.filter((z) => z.severity?.toLowerCase() === 'medium').length,
-    low: zones.filter((z) => z.severity?.toLowerCase() === 'low').length,
+    critical: filteredZones.filter((z) => z.severity?.toLowerCase() === 'critical').length,
+    high: filteredZones.filter((z) => z.severity?.toLowerCase() === 'high').length,
+    medium: filteredZones.filter((z) => z.severity?.toLowerCase() === 'medium').length,
+    low: filteredZones.filter((z) => z.severity?.toLowerCase() === 'low').length,
   };
 
-  const totalZonesCount = zones.length || 1;
+  const totalZonesCount = filteredZones.length || 1;
 
   const chartData = [
     { name: 'Critical', value: severityCounts.critical, color: '#E63946' },
@@ -180,9 +189,27 @@ export default function DashboardPage() {
   ].filter((d) => d.value > 0);
 
   // Top priority zones sorted by risk_score desc
-  const priorityZones = [...zones]
+  const priorityZones = [...filteredZones]
     .sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0))
     .slice(0, 6);
+
+  // Available districts for district selector
+  const districtList = Array.from(
+    new Set([
+      'East Khasi Hills',
+      'West Khasi Hills',
+      'South West Khasi Hills',
+      'Ri-Bhoi',
+      'East Jaintia Hills',
+      'West Jaintia Hills',
+      'East Garo Hills',
+      'West Garo Hills',
+      'South Garo Hills',
+      'North Garo Hills',
+      'South West Garo Hills',
+      ...zones.map((z) => z.district).filter(Boolean),
+    ])
+  );
 
   // Unified activity timeline merging alerts and reports
   const activityTimeline = [
@@ -238,7 +265,7 @@ export default function DashboardPage() {
           <div className="space-y-1.5 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-200 border border-white/15 text-[11px] font-bold tracking-wide">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>GIS Monitoring Active • East Khasi Hills</span>
+              <span>GIS Monitoring Active • {selectedDistrict === 'all' ? 'All Meghalaya Districts' : selectedDistrict}</span>
             </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
               Landslide Risk Monitoring
@@ -250,21 +277,25 @@ export default function DashboardPage() {
 
           {/* Quick Header Controls */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setIsAlertModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
-            >
-              <Radio className="w-3.5 h-3.5" />
-              <span>Issue Alert</span>
-            </button>
+            {isOfficial && (
+              <>
+                <button
+                  onClick={() => setIsAlertModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
+                >
+                  <Radio className="w-3.5 h-3.5" />
+                  <span>Issue Alert</span>
+                </button>
 
-            <button
-              onClick={() => setIsHistoryOpen(true)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-colors"
-              title="Alert History"
-            >
-              <History className="w-4 h-4" />
-            </button>
+                <button
+                  onClick={() => setIsHistoryOpen(true)}
+                  className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-colors"
+                  title="Alert History"
+                >
+                  <History className="w-4 h-4" />
+                </button>
+              </>
+            )}
 
             <button
               onClick={fetchAll}
@@ -310,15 +341,17 @@ export default function DashboardPage() {
           <span>+ View Alerts</span>
         </button>
 
-        <button
-          onClick={() => navigate('/predict')}
-          className="whitespace-nowrap flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] hover:border-[#006B4F] text-xs font-bold text-slate-800 dark:text-zinc-200 shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5"
-        >
-          <div className="w-5 h-5 rounded-lg bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 flex items-center justify-center">
-            <Cpu className="w-3 h-3" />
-          </div>
-          <span>+ Risk Predictor</span>
-        </button>
+        {isOfficial && (
+          <button
+            onClick={() => navigate('/predict')}
+            className="whitespace-nowrap flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] hover:border-[#006B4F] text-xs font-bold text-slate-800 dark:text-zinc-200 shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5"
+          >
+            <div className="w-5 h-5 rounded-lg bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 flex items-center justify-center">
+              <Cpu className="w-3 h-3" />
+            </div>
+            <span>+ Risk Predictor</span>
+          </button>
+        )}
 
         <button
           onClick={() => setIsSituationModalOpen(true)}
@@ -329,6 +362,23 @@ export default function DashboardPage() {
           </div>
           <span>+ Monitored Situation</span>
         </button>
+
+        {/* District Filter Selector */}
+        <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] text-xs font-semibold shrink-0">
+          <span className="text-slate-500 dark:text-zinc-400">District:</span>
+          <select
+            value={selectedDistrict}
+            onChange={(e) => setSelectedDistrict(e.target.value)}
+            className="bg-transparent text-[#006B4F] dark:text-emerald-400 font-bold focus:outline-none cursor-pointer"
+          >
+            <option value="all">All Districts ({districtList.length})</option>
+            {districtList.map((dist) => (
+              <option key={dist} value={dist}>
+                {dist}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* ── Redesigned KPI Cards ─────────────────────────────────────── */}

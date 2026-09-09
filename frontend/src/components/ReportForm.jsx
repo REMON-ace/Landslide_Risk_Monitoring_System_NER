@@ -22,7 +22,7 @@ export default function ReportForm() {
   const { isOnline, refreshPendingCount } = useOfflineSync();
 
   const [description, setDescription] = useState('');
-  const [reporterType, setReporterType] = useState('citizen');
+  const [reporterType, setReporterType] = useState('official');
   const [lat, setLat] = useState('25.2840');
   const [lng, setLng] = useState('91.7325');
   const [locationStatus, setLocationStatus] = useState('idle'); // idle | detecting | acquired | failed
@@ -265,20 +265,7 @@ export default function ReportForm() {
               <label className="block font-semibold text-[#1F2937] dark:text-zinc-300 mb-1.5">
                 {t('report_form.reporter_type')} <span className="text-[#E63946]">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setReporterType('citizen')}
-                  className={`py-2.5 px-3 rounded-xl border font-semibold flex items-center justify-center gap-2 transition-all ${
-                    reporterType === 'citizen'
-                      ? 'bg-[#006B4F] text-white border-[#006B4F] shadow-sm'
-                      : 'bg-slate-50 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-[#D9E2DE] dark:border-zinc-800'
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  <span>{t('report_form.citizen')}</span>
-                </button>
-
+              <div className="grid grid-cols-1 gap-2">
                 <button
                   type="button"
                   onClick={() => setReporterType('official')}

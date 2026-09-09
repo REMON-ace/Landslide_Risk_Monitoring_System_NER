@@ -18,6 +18,8 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+
 export default function Sidebar({
   isOpen,
   onClose,
@@ -29,6 +31,7 @@ export default function Sidebar({
   onOpenSettings,
 }) {
   const { t } = useTranslation();
+  const { } = useAuth(); // Auth context available if needed for future admin-role checks
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -46,13 +49,13 @@ export default function Sidebar({
     }
   };
 
-  const navSections = [
+  const rawNavSections = [
     {
       heading: 'Navigation',
       items: [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/map', label: 'Risk Map', icon: Map },
-        { path: '/predict', label: 'Risk Predictor', icon: Cpu },
+        { path: '/predict', label: 'Risk Predictor', icon: Cpu, isPredictor: true },
         { path: '/report', label: 'Field Reports', icon: FileText, badge: pendingReportCount > 0 ? pendingReportCount : null },
         { path: '/alerts', label: 'Alerts', icon: Bell, badge: activeAlertCount > 0 ? activeAlertCount : null },
       ],
@@ -67,6 +70,7 @@ export default function Sidebar({
     },
     {
       heading: 'Admin / Management',
+      isAdminOnly: true,
       items: [
         { path: '/report', label: 'Reports Management', icon: ShieldCheck },
         { path: '/alerts', label: 'Alert Management', icon: Radio },
@@ -74,6 +78,10 @@ export default function Sidebar({
       ],
     },
   ];
+
+  // Sidebar is only rendered inside AdminLayout which is admin-only —
+  // show all navigation sections without citizen filtering.
+  const navSections = rawNavSections;
 
   return (
     <>

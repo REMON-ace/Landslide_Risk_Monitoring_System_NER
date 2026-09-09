@@ -9,6 +9,8 @@ import SettingsModal from './SettingsModal';
 import OfflineNotice from '../OfflineNotice';
 import EmergencyAlertBanner from '../EmergencyAlertBanner';
 
+import UserVerificationModal from './UserVerificationModal';
+
 function AdminFooter() {
   return (
     <footer className="border-t border-[#D9E2DE] dark:border-[#27272A] bg-white dark:bg-[#0D0E10] py-4 mt-8 transition-colors">
@@ -33,6 +35,7 @@ export default function AdminLayout() {
   const [isSidebarCollapsed,  setIsSidebarCollapsed]  = useState(false);
   const [isProfileOpen,  setIsProfileOpen]  = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['alerts_nav'],
@@ -81,6 +84,7 @@ export default function AdminLayout() {
           zones={zones}
           onOpenProfile={() => setIsProfileOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenVerification={() => setIsVerificationOpen(true)}
         />
 
         {/* Push content below fixed header (h-16 = 64px) */}
@@ -99,6 +103,7 @@ export default function AdminLayout() {
       {/* Modals */}
       <ProfileModal  isOpen={isProfileOpen}  onClose={() => setIsProfileOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <UserVerificationModal isOpen={isVerificationOpen} onClose={() => setIsVerificationOpen(false)} />
     </div>
   );
 }

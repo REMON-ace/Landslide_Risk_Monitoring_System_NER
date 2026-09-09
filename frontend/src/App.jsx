@@ -2,16 +2,26 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminLayout from './components/admin/AdminLayout';
+import CitizenLayout from './components/citizen/CitizenLayout';
 
-import DashboardPage from './pages/DashboardPage';
-import MapPage from './pages/MapPage';
-import FieldReportPage from './pages/FieldReportPage';
+// Admin pages
+import DashboardPage    from './pages/DashboardPage';
+import MapPage          from './pages/MapPage';
+import FieldReportPage  from './pages/FieldReportPage';
 import PublicAlertsPage from './pages/PublicAlertsPage';
-import PredictorPage from './pages/PredictorPage';
-import LoginPage from './pages/LoginPage';
+import PredictorPage    from './pages/PredictorPage';
+
+// Citizen pages
+import CitizenDashboard   from './pages/citizen/CitizenDashboard';
+import CitizenMapPage     from './pages/citizen/CitizenMapPage';
+import CitizenReportsPage from './pages/citizen/CitizenReportsPage';
+import CitizenAlertsPage  from './pages/citizen/CitizenAlertsPage';
+
+// Auth pages
+import LoginPage    from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,6 +31,28 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+/**
+ * AdminRoute — only allows district_admin / field_official / admin roles.
+ * Citizens are redirected to the Citizen Portal.
+ */
+function AdminRoute({ children }) {
+  const { isAuthenticated, isOfficial } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isOfficial)      return <Navigate to="/citizen" replace />;
+  return children;
+}
+
+/**
+ * CitizenRoute — only allows authenticated citizen-role users.
+ * Officials are redirected to admin dashboard.
+ */
+function CitizenRoute({ children }) {
+  const { isAuthenticated, isOfficial } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (isOfficial)       return <Navigate to="/" replace />;
+  return children;
+}
 
 export default function App() {
   return (
@@ -34,25 +66,40 @@ export default function App() {
           <AuthProvider>
             <Routes>
               {/* ── Public routes ─────────────────────────────────────── */}
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login"    element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+
+              {/* ── Citizen Portal — sidebar layout with nested pages ─── */}
+              <Route
+                element={
+                  <CitizenRoute>
+                    <CitizenLayout />
+                  </CitizenRoute>
+                }
+              >
+                <Route path="/citizen"         element={<CitizenDashboard />} />
+                <Route path="/citizen/map"     element={<CitizenMapPage />} />
+                <Route path="/citizen/reports" element={<CitizenReportsPage />} />
+                <Route path="/citizen/alerts"  element={<CitizenAlertsPage />} />
+              </Route>
 
               {/* ── Protected Admin Portal routes (wrapped in AdminLayout) */}
               <Route
                 element={
-                  <ProtectedRoute>
+                  <AdminRoute>
                     <AdminLayout />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               >
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/report" element={<FieldReportPage />} />
-                <Route path="/alerts" element={<PublicAlertsPage />} />
+                <Route path="/"        element={<DashboardPage />} />
+                <Route path="/map"     element={<MapPage />} />
+                <Route path="/report"  element={<FieldReportPage />} />
+                <Route path="/alerts"  element={<PublicAlertsPage />} />
                 <Route path="/predict" element={<PredictorPage />} />
               </Route>
 
-              {/* ── Catch-all: redirect unknown URLs to dashboard ─── */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* ── Catch-all: redirect unknown URLs to login ─────────── */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </AuthProvider>
         </Router>

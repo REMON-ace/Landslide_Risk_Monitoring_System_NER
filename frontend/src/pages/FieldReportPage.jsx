@@ -21,8 +21,11 @@ import {
   Filter,
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+
 export default function FieldReportPage() {
   const { t } = useTranslation();
+  const { isOfficial } = useAuth();
   const { pendingCount, isOnline } = useOfflineSync();
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,47 +86,60 @@ export default function FieldReportPage() {
       />
 
       {/* ── Status Metrics Quick Bar ────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Total Incident Reports
-          </span>
-          <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
-            {reports.length}
-          </span>
-        </div>
+      {isOfficial && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Total Incident Reports
+            </span>
+            <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
+              {reports.length}
+            </span>
+          </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-1">
-            Verified by Officials
-          </span>
-          <span className="text-2xl font-black font-mono text-[#008060] dark:text-emerald-400">
-            {verifiedCount}
-          </span>
-        </div>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-1">
+              Verified by Officials
+            </span>
+            <span className="text-2xl font-black font-mono text-[#008060] dark:text-emerald-400">
+              {verifiedCount}
+            </span>
+          </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block mb-1">
-            Pending Review
-          </span>
-          <span className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
-            {receivedCount}
-          </span>
-        </div>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block mb-1">
+              Pending Review
+            </span>
+            <span className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
+              {receivedCount}
+            </span>
+          </div>
 
-        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block mb-1">
-            Local Offline Queue
-          </span>
-          <span className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
-            {pendingCount}
-          </span>
+          <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block mb-1">
+              Local Offline Queue
+            </span>
+            <span className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
+              {pendingCount}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Main Two-Column Layout: Form + Active Reports Queue ──── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Interactive Submission Form */}
+      {/* ── Main Layout: Form + Reports View ──── */}
+      {!isOfficial ? (
+        <div className="max-w-3xl mx-auto">
+          <SectionCard
+            kicker="Citizen Incident Portal"
+            title="Submit & View My Reports"
+            subtitle="Submit new ground movement reports and check if they have been reviewed or accepted by officials."
+          >
+            <ReportForm onReportSubmitted={loadReports} />
+          </SectionCard>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Interactive Submission Form */}
         <div className="lg:col-span-6 space-y-4">
           <SectionCard
             kicker="New Ground Observation"
@@ -234,6 +250,7 @@ export default function FieldReportPage() {
           </SectionCard>
         </div>
       </div>
+      )}
 
       {/* Photo Preview Lightbox Modal */}
       {selectedPhoto && (
