@@ -4,7 +4,9 @@ import { getRiskZones, getRoads, getVillages, updateRoadStatus } from '../api/cl
 import MapView from '../components/MapView';
 import ZoneDetailDrawer from '../components/ZoneDetailDrawer';
 import CreateAlertModal from '../components/CreateAlertModal';
-import { Map, Search, ChevronRight } from 'lucide-react';
+import PageHeader from '../components/admin/PageHeader';
+import RiskBadge from '../components/admin/RiskBadge';
+import { Map, Search, ChevronRight, Filter, Radio, RefreshCw } from 'lucide-react';
 
 export default function MapPage() {
   const { t } = useTranslation();
@@ -15,71 +17,119 @@ export default function MapPage() {
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [zonesData, roadsData, villData] = await Promise.all([
+        getRiskZones(),
+        getRoads(),
+        getVillages(),
+      ]);
+      setZones(zonesData || []);
+      setRoads(roadsData || []);
+      setVillages(villData || []);
+    } catch (err) {
+      console.error('Failed to load map data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    Promise.all([getRiskZones(), getRoads(), getVillages()]).then(
-      ([zonesData, roadsData, villData]) => {
-        setZones(zonesData || []);
-        setRoads(roadsData || []);
-        setVillages(villData || []);
-      }
-    );
+    loadData();
   }, []);
 
   const handleUpdateRoadStatus = async (roadId, status) => {
     await updateRoadStatus(roadId, status);
     const updated = await getRoads();
-    setRoads(updated);
+    setRoads(updated || []);
   };
 
   const filteredZones = zones.filter((z) => {
-    const matchesSeverity = filterSeverity === 'all' || z.severity === filterSeverity;
+    const matchesSeverity =
+      filterSeverity === 'all' || (z.severity || '').toLowerCase() === filterSeverity;
     const matchesSearch =
-      z.village_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      z.zone_id.toLowerCase().includes(searchQuery.toLowerCase());
+      (z.village_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (z.zone_id || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSeverity && matchesSearch;
   });
 
   return (
-    <div className="space-y-4 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#006B4F] dark:text-emerald-400 flex items-center gap-2">
-            <Map className="w-6 h-6 text-[#006B4F] dark:text-emerald-400" />
-            <span>{t('map_page.title')}</span>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-zinc-400">
-            {t('map_page.subtitle')}
-          </p>
-        </div>
+    <div className="space-y-5 pb-12">
+      {/* ── Page Header ─────────────────────────────────────────── */}
+      <PageHeader
+        kicker="Geospatial Intelligence Portal"
+        title="East Khasi Hills GIS Hazard Map"
+        description="Spatial surveillance of geocells, arterial road pass conditions, and settlement proximity across the Meghalaya plateau."
+        badge={`${filteredZones.length} Monitored Cells`}
+        actions={
+          <>
+            <button
+              onClick={() => setIsAlertModalOpen(true)}
+              className="px-3.5 py-2 rounded-lg bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+              <span>Issue Directive</span>
+            </button>
+            <button
+              onClick={loadData}
+              disabled={isLoading}
+              className="p-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:text-[#006B4F] text-xs transition-all shadow-xs"
+              title="Refresh Map Layers"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+      {/* ── Filter Controls Bar ─────────────────────────────────── */}
+      <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+        <div className="flex items-center gap-2 flex-1 max-w-md">
+          <div className="relative w-full">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('common.search')}
-              className="pl-8 pr-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-[#D9E2DE] dark:border-zinc-800 text-xs text-[#1F2937] dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F]"
+              placeholder="Filter by village name or zone ID..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F]"
             />
           </div>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
+        <div className="flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
+            Severity:
+          </span>
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-[#D9E2DE] dark:border-zinc-800 text-xs text-[#1F2937] dark:text-zinc-100 font-medium focus:outline-none focus:border-[#006B4F]"
+            className="px-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs text-slate-800 dark:text-zinc-200 font-medium focus:outline-none focus:border-[#006B4F]"
           >
-            <option value="all">{t('map_page.all_severities')}</option>
-            <option value="critical">{t('severity.critical_short')}</option>
-            <option value="high">{t('severity.high_short')}</option>
-            <option value="medium">{t('severity.medium_short')}</option>
-            <option value="low">{t('severity.low_short')}</option>
+            <option value="all">All Severities ({zones.length})</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
           </select>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      {/* ── Main Map + Inspection Column Grid ───────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        {/* Full-height Map Container */}
         <div className="lg:col-span-3">
           <MapView
             zones={filteredZones}
@@ -88,11 +138,12 @@ export default function MapPage() {
             selectedZoneId={selectedZone?.zone_id}
             onSelectZone={(z) => setSelectedZone(z)}
             onUpdateRoadStatus={handleUpdateRoadStatus}
-            height="640px"
+            height="660px"
           />
         </div>
 
-        <div className="lg:col-span-1 h-[640px] flex flex-col gap-4">
+        {/* Side Inspection Panel */}
+        <div className="lg:col-span-1 h-[660px] flex flex-col">
           {selectedZone ? (
             <ZoneDetailDrawer
               zone={selectedZone}
@@ -100,57 +151,59 @@ export default function MapPage() {
               onOpenAlertModal={() => setIsAlertModalOpen(true)}
             />
           ) : (
-            <div className="bg-white dark:bg-zinc-950 border border-[#D9E2DE] dark:border-zinc-800 rounded-xl p-4 flex-1 overflow-y-auto space-y-3 shadow-sm">
-              <div className="pb-2 border-b border-[#D9E2DE] dark:border-zinc-800">
-                <h3 className="font-bold text-xs text-[#006B4F] dark:text-emerald-400 uppercase tracking-wider">
-                  {t('map_page.monitored_cells')} ({filteredZones.length})
-                </h3>
-                <p className="text-[11px] text-slate-500">{t('map_page.monitored_hint')}</p>
+            <div className="bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl p-4 flex-1 overflow-y-auto space-y-3 shadow-sm flex flex-col">
+              <div className="pb-3 border-b border-[#D9E2DE] dark:border-[#1E1E24] shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-xs text-[#006B4F] dark:text-emerald-400 uppercase tracking-wider">
+                    Monitored Cells ({filteredZones.length})
+                  </h3>
+                  <span className="text-[10px] text-slate-400">Click to focus</span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                  Select any grid cell to view geomorphological slope, curvature, rainfall index, and historical risk.
+                </p>
               </div>
 
-              <div className="space-y-2">
-                {filteredZones.map((z) => {
-                  const severityBadge = {
-                    critical: 'bg-[#E63946]',
-                    high: 'bg-orange-600',
-                    medium: 'bg-yellow-600',
-                    low: 'bg-[#008060]',
-                  }[z.severity];
-
-                  return (
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {filteredZones.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-400">
+                    No matching zones found.
+                  </div>
+                ) : (
+                  filteredZones.map((z) => (
                     <div
                       key={z.zone_id}
                       onClick={() => setSelectedZone(z)}
-                      className="p-2.5 rounded-xl bg-[#F5F7F6]/80 dark:bg-zinc-900 border border-[#D9E2DE] dark:border-zinc-800 hover:border-[#006B4F] cursor-pointer transition-all flex items-center justify-between group"
+                      className="p-3 rounded-lg bg-[#F5F7F6]/70 dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] hover:border-[#006B4F] dark:hover:border-emerald-500/50 cursor-pointer transition-all flex items-center justify-between group"
                     >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs text-[#1F2937] dark:text-zinc-100">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
                             {z.village_name}
                           </span>
-                          <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold text-white uppercase ${severityBadge}`}>
-                            {t(`severity.${z.severity}_short`)}
-                          </span>
+                          <RiskBadge severity={z.severity} size="xs" />
                         </div>
-                        <span className="text-[10px] font-mono text-slate-500">
-                          {z.zone_id} • {t('map_page.score_label')}: {z.risk_score}
-                        </span>
+                        <div className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
+                          {z.zone_id} • Score: {z.risk_score}
+                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#006B4F] group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#006B4F] dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                     </div>
-                  );
-                })}
+                  ))
+                )}
               </div>
             </div>
           )}
         </div>
       </div>
 
+      {/* Alert creation modal */}
       <CreateAlertModal
         isOpen={isAlertModalOpen}
         onClose={() => setIsAlertModalOpen(false)}
         zones={zones}
         defaultZone={selectedZone}
+        onAlertCreated={loadData}
       />
     </div>
   );

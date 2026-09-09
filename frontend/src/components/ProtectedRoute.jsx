@@ -15,11 +15,19 @@ import { useAuth } from '../context/AuthContext';
  *   → Renders children normally.
  */
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const hasToken = typeof window !== 'undefined' ? Boolean(localStorage.getItem('auth_token')) : false;
 
-  if (!isAuthenticated || !hasToken) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F5F7F6] dark:bg-black flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-[#006B4F] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !hasToken) {
     // Replace the current history entry so the Back button
     // cannot navigate back to the protected page.
     return (

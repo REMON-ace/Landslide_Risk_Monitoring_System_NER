@@ -89,7 +89,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: Boolean(user),
+        isAuthenticated: Boolean(user || (typeof window !== 'undefined' && localStorage.getItem('auth_token'))),
         isOfficial,
         isLoading,
         login: loginUser,

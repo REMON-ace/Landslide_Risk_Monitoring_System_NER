@@ -8,15 +8,35 @@ export default {
   theme: {
     extend: {
       colors: {
+        // AppDashboard Landslide Risk Theme System
+        app: {
+          primary: '#006B4F',
+          primaryHover: '#00523C',
+          primaryLight: '#EAF5F0',
+          canvas: '#F5F7F6',
+          surface: '#FFFFFF',
+          border: '#D9E2DE',
+          borderSubtle: '#E5EDE9',
+          text: '#1F2937',
+          muted: '#4B5563',
+          dim: '#6B7280',
+          darkCanvas: '#000000',
+          darkSurface: '#0D0E10',
+          darkElevated: '#141418',
+          darkBorder: '#27272A',
+          darkBorderSubtle: '#18181B',
+          darkText: '#F4F4F5',
+          darkMuted: '#A1A1AA',
+        },
         // Indian Government Disaster Management Theme (NIDM inspired)
         gov: {
           primary: '#006B4F',       // Primary Dark Green / deep forest green
-          primaryHover: '#00523c',
+          primaryHover: '#00523C',
           secondary: '#008060',     // Secondary Green
-          secondaryHover: '#00664d',
+          secondaryHover: '#00664D',
           light: '#EAF5F0',         // Light Green
           alert: '#E63946',         // Red / Alert for emergency & high-risk
-          alertHover: '#c92a37',
+          alertHover: '#C92A37',
           text: '#1F2937',          // Dark text
           bg: '#F5F7F6',            // Light neutral / greenish background
           border: '#D9E2DE',        // Border Gray
@@ -25,34 +45,34 @@ export default {
         // True-black dark mode system (strictly neutral zinc/pitch-black, NO blue/navy)
         dark: {
           bg: '#000000',
-          surface: '#09090b',
-          card: '#121212',
-          elevated: '#18181b',
-          hover: '#222226',
-          border: '#27272a',
-          borderSubtle: '#18181b',
-          text: '#f4f4f5',
-          muted: '#a1a1aa',
-          dim: '#71717a',
+          surface: '#0D0E10',
+          card: '#121215',
+          elevated: '#18181B',
+          hover: '#202025',
+          border: '#27272A',
+          borderSubtle: '#18181B',
+          text: '#F4F4F5',
+          muted: '#A1A1AA',
+          dim: '#71717A',
         },
         // Crisp light mode system
         light: {
           bg: '#F5F7F6',
-          surface: '#ffffff',
-          card: '#ffffff',
+          surface: '#FFFFFF',
+          card: '#FFFFFF',
           elevated: '#EAF5F0',
-          hover: '#e2e8f0',
+          hover: '#E2E8F0',
           border: '#D9E2DE',
           borderSubtle: '#E5EDE9',
           text: '#1F2937',
           muted: '#4B5563',
           dim: '#6B7280',
         },
-        // Risk & status indicators
+        // Risk & status indicators (semantic compliance)
         severity: {
           critical: '#E63946',
-          high: '#ea580c',
-          medium: '#eab308',
+          high: '#EA580C',
+          medium: '#D97706',
           low: '#008060',
         },
       },

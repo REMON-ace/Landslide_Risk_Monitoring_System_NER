@@ -1,32 +1,251 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getFieldReports, updateFieldReportStatus } from '../api/client';
+import { useOfflineSync } from '../hooks/useOfflineSync';
 import ReportForm from '../components/ReportForm';
-import { Shield } from 'lucide-react';
+import PageHeader from '../components/admin/PageHeader';
+import SectionCard from '../components/admin/SectionCard';
+import StatusBadge from '../components/admin/StatusBadge';
+import {
+  FileText,
+  ShieldCheck,
+  MapPin,
+  Clock,
+  User,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Camera,
+  Layers,
+  Search,
+  Filter,
+} from 'lucide-react';
 
 export default function FieldReportPage() {
   const { t } = useTranslation();
+  const { pendingCount, isOnline } = useOfflineSync();
+  const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+
+  const loadReports = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getFieldReports();
+      setReports(data || []);
+    } catch (err) {
+      console.error('Failed to load field reports:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  const handleUpdateStatus = async (reportId, newStatus) => {
+    try {
+      await updateFieldReportStatus(reportId, newStatus);
+      await loadReports();
+    } catch (err) {
+      console.error('Failed to update report status:', err);
+    }
+  };
+
+  const filteredReports = reports.filter((r) => {
+    if (statusFilter === 'all') return true;
+    return (r.status || '').toLowerCase() === statusFilter;
+  });
+
+  const verifiedCount = reports.filter((r) => r.status === 'verified').length;
+  const receivedCount = reports.filter((r) => r.status === 'received').length;
 
   return (
-    <div className="py-2 pb-16 space-y-6">
-      {/* Intro info card */}
-      <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-orange-500/5 dark:bg-orange-950/20 border border-orange-500/20 text-xs text-slate-700 dark:text-zinc-300">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 shrink-0">
-            <Shield className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-              {t('field_report_page.info_title')}
-            </h3>
-            <p className="mt-1 text-slate-600 dark:text-zinc-400 leading-relaxed">
-              {t('field_report_page.info_desc')}
-            </p>
-          </div>
+    <div className="space-y-6 pb-16">
+      {/* ── Page Header ─────────────────────────────────────────── */}
+      <PageHeader
+        kicker="Field Operations & Citizen Science"
+        title="Field Incident Reporting & Moderation"
+        description="Ground-level hazard verification portal. Ground survey teams and local citizens can submit geolocated tensile cracks, mudslides, and boulder falls with photographic documentation."
+        badge={isOnline ? 'Online Sync Active' : 'Offline Queueing Active'}
+        actions={
+          <button
+            onClick={loadReports}
+            disabled={isLoading}
+            className="px-3 py-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:text-[#006B4F] text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh Reports</span>
+          </button>
+        }
+      />
+
+      {/* ── Status Metrics Quick Bar ────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+            Total Incident Reports
+          </span>
+          <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
+            {reports.length}
+          </span>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block mb-1">
+            Verified by Officials
+          </span>
+          <span className="text-2xl font-black font-mono text-[#008060] dark:text-emerald-400">
+            {verifiedCount}
+          </span>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block mb-1">
+            Pending Review
+          </span>
+          <span className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
+            {receivedCount}
+          </span>
+        </div>
+
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block mb-1">
+            Local Offline Queue
+          </span>
+          <span className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
+            {pendingCount}
+          </span>
         </div>
       </div>
 
-      {/* Main reporting form */}
-      <ReportForm />
+      {/* ── Main Two-Column Layout: Form + Active Reports Queue ──── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Interactive Submission Form */}
+        <div className="lg:col-span-6 space-y-4">
+          <SectionCard
+            kicker="New Ground Observation"
+            title="Submit Hazard Incident"
+            subtitle="Record geolocated ground movement, rockfall, or retaining wall deformation."
+          >
+            <ReportForm onReportSubmitted={loadReports} />
+          </SectionCard>
+        </div>
+
+        {/* Right Column: Ground Reports Review Queue */}
+        <div className="lg:col-span-6 space-y-4">
+          <SectionCard
+            kicker="Ground Truth Verification"
+            title="Field Reports Review Feed"
+            subtitle="Review incident reports submitted by ground responders and citizen observers."
+            badge={`${filteredReports.length} Shown`}
+            actions={
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-2 py-1 rounded-md bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs font-semibold text-slate-700 dark:text-zinc-200 focus:outline-none"
+                >
+                  <option value="all">All ({reports.length})</option>
+                  <option value="received">Pending Review ({receivedCount})</option>
+                  <option value="verified">Verified ({verifiedCount})</option>
+                  <option value="dismissed">Dismissed</option>
+                </select>
+              </div>
+            }
+          >
+            <div className="space-y-3.5 max-h-[760px] overflow-y-auto pr-1">
+              {filteredReports.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-400 dark:text-zinc-500">
+                  No reports matching filter criteria.
+                </div>
+              ) : (
+                filteredReports.map((r) => (
+                  <div
+                    key={r.report_id}
+                    className="p-4 rounded-xl border border-[#D9E2DE] dark:border-[#27272A] bg-[#F5F7F6]/60 dark:bg-[#141418] space-y-2.5 transition-all shadow-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-[#006B4F] dark:text-emerald-400">
+                          {r.report_id}
+                        </span>
+                        <StatusBadge status={r.status} size="xs" />
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {r.timestamp
+                          ? new Date(r.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                          : '—'}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-800 dark:text-zinc-200 font-medium leading-relaxed">
+                      {r.description || 'No description provided.'}
+                    </p>
+
+                    {/* Photo thumbnail if available */}
+                    {r.photo_url && (
+                      <div className="relative rounded-lg overflow-hidden border border-[#D9E2DE] dark:border-[#27272A] max-h-40 bg-black/10">
+                        <img
+                          src={r.photo_url}
+                          alt="Incident proof"
+                          className="w-full h-32 object-cover cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => setSelectedPhoto(r.photo_url)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-[#D9E2DE]/70 dark:border-[#27272A]/70 text-[11px] text-slate-500">
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{r.lat?.toFixed(4)}, {r.lng?.toFixed(4)}</span>
+                      </div>
+
+                      {/* Official Verification Controls */}
+                      <div className="flex items-center gap-1.5">
+                        {r.status !== 'verified' && (
+                          <button
+                            onClick={() => handleUpdateStatus(r.report_id, 'verified')}
+                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 hover:bg-emerald-100 text-[#008060] dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 transition-colors flex items-center gap-1"
+                          >
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Verify</span>
+                          </button>
+                        )}
+                        {r.status !== 'dismissed' && (
+                          <button
+                            onClick={() => handleUpdateStatus(r.report_id, 'dismissed')}
+                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300 border border-slate-200/60 transition-colors flex items-center gap-1"
+                          >
+                            <XCircle className="w-3 h-3" />
+                            <span>Dismiss</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </div>
+      </div>
+
+      {/* Photo Preview Lightbox Modal */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-w-3xl max-h-[85vh] rounded-xl overflow-hidden shadow-2xl bg-black">
+            <img src={selectedPhoto} alt="Proof high resolution" className="w-full h-full object-contain" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

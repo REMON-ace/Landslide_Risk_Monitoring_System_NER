@@ -5,56 +5,86 @@
 :root {
   color-scheme: light;
   --bg-app: #F5F7F6;
-  --bg-card: #ffffff;
-  --bg-card-hover: #EAF5F0;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F8FAF9;
+  --bg-sidebar: #FFFFFF;
+  --bg-header: #FFFFFF;
   --border-color: #D9E2DE;
   --border-subtle: #E5EDE9;
   --text-main: #1F2937;
   --text-muted: #4B5563;
+  --text-dim: #6B7280;
   --primary-gov: #006B4F;
-  --primary-gov-hover: #00523c;
+  --primary-gov-hover: #00523C;
   --secondary-gov: #008060;
   --light-gov: #EAF5F0;
   --alert-red: #E63946;
+  --risk-low: #008060;
+  --risk-medium: #D97706;
+  --risk-high: #EA580C;
+  --risk-critical: #E63946;
 }
 
 .dark {
   color-scheme: dark;
   /* Strictly pitch black & neutral dark zinc — NO BLUE / NAVY */
   --bg-app: #000000;
-  --bg-card: #0a0a0a;
-  --bg-card-hover: #141416;
-  --border-color: #27272a;
-  --border-subtle: #18181b;
-  --text-main: #f4f4f5;
-  --text-muted: #a1a1aa;
+  --bg-surface: #0D0E10;
+  --bg-surface-elevated: #141418;
+  --bg-sidebar: #0D0E10;
+  --bg-header: #0D0E10;
+  --border-color: #27272A;
+  --border-subtle: #18181B;
+  --text-main: #F4F4F5;
+  --text-muted: #A1A1AA;
+  --text-dim: #71717A;
   --primary-gov: #008060;
   --primary-gov-hover: #006B4F;
   --secondary-gov: #006B4F;
   --light-gov: #122820;
   --alert-red: #E63946;
+  --risk-low: #008060;
+  --risk-medium: #D97706;
+  --risk-high: #EA580C;
+  --risk-critical: #E63946;
 }
 
-/* Reusable Indian Government Theme Utility Classes */
+/* AppDashboard & Landslide Risk System Component Classes */
 @layer components {
+  .app-panel {
+    @apply bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl shadow-sm transition-all;
+  }
+
+  .app-panel-header {
+    @apply flex items-center justify-between p-4 border-b border-[#D9E2DE] dark:border-[#1E1E24];
+  }
+
+  .app-hero {
+    @apply bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl p-5 sm:p-6 shadow-sm;
+  }
+
+  .app-kpi-card {
+    @apply bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl p-4 sm:p-5 shadow-sm hover:border-[#006B4F]/40 dark:hover:border-emerald-500/40 hover:shadow-md transition-all duration-200;
+  }
+
   .gov-card {
-    @apply bg-white dark:bg-black border border-[#D9E2DE] dark:border-zinc-800 rounded-xl shadow-sm transition-all;
+    @apply bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl shadow-sm transition-all;
   }
 
   .gov-btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523c] text-white font-semibold text-xs transition-colors shadow-sm disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white font-semibold text-xs transition-colors shadow-sm disabled:opacity-50;
   }
 
   .gov-btn-secondary {
-    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-[#006B4F] text-[#006B4F] dark:text-emerald-400 hover:bg-[#EAF5F0] dark:hover:bg-emerald-950/30 font-semibold text-xs transition-colors shadow-sm disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-[#1F2937] dark:text-zinc-200 hover:bg-[#EAF5F0] dark:hover:bg-emerald-950/30 hover:border-[#006B4F] font-semibold text-xs transition-colors shadow-sm disabled:opacity-50;
   }
 
   .gov-btn-emergency {
-    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#E63946] hover:bg-[#c92a37] text-white font-semibold text-xs transition-colors shadow-md disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#E63946] hover:bg-[#C92A37] text-white font-semibold text-xs transition-colors shadow-md disabled:opacity-50;
   }
 
   .gov-input {
-    @apply w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-950 border border-[#D9E2DE] dark:border-zinc-800 text-[#1F2937] dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] text-xs transition-all;
+    @apply w-full px-3 py-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-[#1F2937] dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] text-xs transition-all;
   }
 
   .gov-table-header {
@@ -174,3 +204,40 @@ body {
   filter: contrast(1.25) brightness(1.05);
 }
 
+/* ── Mobile improvements ──────────────────────────────────────────── */
+
+/* Safe area inset for iPhones with notch / home bar */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Bigger touch targets on mobile */
+@media (max-width: 640px) {
+  button, [role="button"] {
+    min-height: 36px;
+  }
+
+  /* Hide less-important columns on very small screens */
+  .hide-xs {
+    display: none !important;
+  }
+}
+
+/* Prevent horizontal overflow on mobile */
+.overflow-x-safe {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Smooth sidebar transition */
+aside {
+  will-change: transform, width;
+}
+
+/* Ensure map never overflows on mobile */
+.leaflet-container {
+  max-width: 100%;
+  touch-action: pan-y pinch-zoom;
+}
