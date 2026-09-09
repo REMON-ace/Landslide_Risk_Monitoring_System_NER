@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, LogIn, Key, User, AlertCircle } from 'lucide-react';
+import { ShieldCheck, LogIn, Key, User, AlertCircle, Database, Check } from 'lucide-react';
+
+const BACKEND_DEMO_CREDENTIALS = {
+  username: 'admin_shillong',
+  password: 'Admin@1234',
+  role: 'District Admin',
+  access: 'Full Access',
+};
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -10,19 +17,20 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // All hooks must be called unconditionally before any early return
-  const [username, setUsername] = useState('official_shillong');
-  const [password, setPassword] = useState('meghalaya2026');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quickFillApplied, setQuickFillApplied] = useState(false);
 
-  // If already authenticated, skip the login page and go straight to dashboard
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  // If user was redirected from a protected route, send them back there after login
-  const from = location.state?.from?.pathname || '/';
+  const targetPath =
+    location.state?.from?.pathname && location.state.from.pathname !== '/login'
+      ? location.state.from.pathname
+      : '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,77 +38,106 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(username, password);
-      // Navigate to the originally intended route (or dashboard if none)
-      navigate(from, { replace: true });
+      const response = await login(username.trim(), password);
+      console.log('LOGIN RESPONSE:', {
+        role: response?.role,
+        district: response?.district,
+        hasToken: Boolean(response?.token),
+      });
+      navigate(targetPath, { replace: true });
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please verify credentials.');
+      // Clean error presentation for 401 or auth failures
+      if (
+        err.status === 401 ||
+        (err.message && err.message.toLowerCase().includes('401')) ||
+        (err.message && err.message.toLowerCase().includes('invalid')) ||
+        (err.data?.detail && typeof err.data.detail === 'string' && err.data.detail.toLowerCase().includes('invalid'))
+      ) {
+        setError('Invalid username or password.');
+      } else {
+        setError(err.message || 'Authentication failed. Please check credentials.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const setDemoCredentials = (u, p) => {
-    setUsername(u);
-    setPassword(p);
+  const handleQuickFill = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setUsername(BACKEND_DEMO_CREDENTIALS.username);
+    setPassword(BACKEND_DEMO_CREDENTIALS.password);
+    setError(null);
+    setQuickFillApplied(true);
+    setTimeout(() => setQuickFillApplied(false), 2000);
   };
 
   return (
-    <div className="max-w-md mx-auto py-8 sm:py-16">
-      <div className="bg-white dark:bg-zinc-950 border border-[#D9E2DE] dark:border-zinc-800 rounded-xl p-7 sm:p-9 shadow-lg space-y-6">
-        
-        {/* Header with platform logo */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex p-1.5 rounded-2xl bg-black border border-[#D9E2DE] dark:border-zinc-700 shadow-md">
-            <img src="/logo.svg" alt="NER LEWS Logo" className="w-14 h-14 object-cover rounded-xl" />
+    <div className="min-h-screen bg-[#F5F7F6] dark:bg-black flex items-center justify-center p-4 selection:bg-[#006B4F] selection:text-white transition-colors">
+      <div className="w-full max-w-md bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-2xl p-7 sm:p-9 shadow-xl space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-2.5">
+          <div className="inline-flex p-2 rounded-2xl bg-black border border-[#D9E2DE] dark:border-[#27272A] shadow-sm">
+            <img src="/logo.svg" alt="NER LEWS Logo" className="w-12 h-12 object-cover rounded-xl" />
           </div>
-          <h1 className="text-xl font-black text-[#006B4F] dark:text-emerald-400">
-            {t('auth.login_title')}
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-zinc-400">
-            {t('auth.login_subtitle')}
-          </p>
+          <div>
+            <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
+              Landslide Risk Monitoring Portal
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+              North Eastern Region • East Khasi Hills District
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/20">
+            <Database className="w-3 h-3" />
+            <span>Connected to GIS Database</span>
+          </div>
         </div>
 
+        {/* Clean error message without raw technical codes */}
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-[#E63946] flex items-center gap-2">
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-xs text-[#E63946] flex items-center gap-2 animate-fade-in">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
+            <span className="font-medium">{error}</span>
           </div>
         )}
 
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          
-          <div>
-            <label className="block font-semibold text-[#1F2937] dark:text-zinc-300 mb-1.5">
-              {t('auth.username')} <span className="text-[#E63946]">*</span>
+          <div className="space-y-1.5">
+            <label htmlFor="login-username" className="block font-semibold text-slate-700 dark:text-zinc-300">
+              Username <span className="text-[#E63946]">*</span>
             </label>
             <div className="relative">
               <User className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <input
+                id="login-username"
                 type="text"
                 required
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. official_shillong"
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-[#D9E2DE] dark:border-zinc-800 text-[#1F2937] dark:text-white focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] font-medium"
+                placeholder="e.g. admin_shillong"
+                className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] font-medium transition-all"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block font-semibold text-[#1F2937] dark:text-zinc-300 mb-1.5">
-              {t('auth.password')} <span className="text-[#E63946]">*</span>
+          <div className="space-y-1.5">
+            <label htmlFor="login-password" className="block font-semibold text-slate-700 dark:text-zinc-300">
+              Password <span className="text-[#E63946]">*</span>
             </label>
             <div className="relative">
               <Key className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <input
+                id="login-password"
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-[#D9E2DE] dark:border-zinc-800 text-[#1F2937] dark:text-white focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] font-medium"
+                className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] font-medium transition-all"
               />
             </div>
           </div>
@@ -108,41 +145,47 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 rounded-lg bg-[#006B4F] hover:bg-[#00523c] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2.5 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] cursor-pointer"
           >
             <LogIn className="w-4 h-4" />
-            <span>{isSubmitting ? t('auth.authenticating') : t('auth.signin_button')}</span>
+            <span>{isSubmitting ? 'Authenticating...' : 'Sign In to Operations Console'}</span>
           </button>
         </form>
 
-        {/* Quick Demo Pre-fill */}
-        <div className="pt-4 border-t border-[#D9E2DE] dark:border-zinc-800/80 space-y-2">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block text-center">
-            {t('auth.demo_credentials')}
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('official_shillong', 'meghalaya2026')}
-              className="p-2 rounded-lg bg-[#F5F7F6] dark:bg-zinc-900 hover:bg-[#EAF5F0] dark:hover:bg-zinc-800 border border-[#D9E2DE] dark:border-zinc-800 text-left transition-colors"
-            >
-              <div className="font-bold text-[11px] text-[#006B4F] dark:text-emerald-400">
-                {t('auth.demo_admin')}
-              </div>
-              <div className="text-[10px] text-slate-500 font-mono">official_shillong</div>
-            </button>
+        {/* Demo Credentials Quick Fill — Single District Admin option only */}
+        <div className="pt-4 border-t border-[#D9E2DE] dark:border-[#1E1E24] space-y-2">
+          <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 text-center">
+            Quick fill demo credentials
+          </p>
 
-            <button
-              type="button"
-              onClick={() => setDemoCredentials('sdrf_lead_sohra', 'rescue2026')}
-              className="p-2 rounded-lg bg-[#F5F7F6] dark:bg-zinc-900 hover:bg-[#EAF5F0] dark:hover:bg-zinc-800 border border-[#D9E2DE] dark:border-zinc-800 text-left transition-colors"
-            >
-              <div className="font-bold text-[11px] text-[#006B4F] dark:text-emerald-400">
-                {t('auth.demo_sdrf')}
+          <button
+            type="button"
+            onClick={handleQuickFill}
+            className="w-full cursor-pointer flex items-center justify-between p-3.5 rounded-xl bg-[#F5F7F6] dark:bg-[#141418] hover:bg-[#EAF5F0] dark:hover:bg-emerald-950/20 border border-[#D9E2DE] dark:border-[#27272A] hover:border-[#006B4F]/50 dark:hover:border-emerald-500/40 active:scale-[0.98] transition-all duration-200 group text-left shadow-2xs"
+            title="Click to populate District Admin credentials"
+          >
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs text-[#006B4F] dark:text-emerald-400 group-hover:underline">
+                  {BACKEND_DEMO_CREDENTIALS.role}
+                </span>
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#EAF5F0] dark:bg-emerald-950/50 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/20">
+                  {BACKEND_DEMO_CREDENTIALS.access}
+                </span>
               </div>
-              <div className="text-[10px] text-slate-500 font-mono">sdrf_lead_sohra</div>
-            </button>
-          </div>
+              <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
+                {BACKEND_DEMO_CREDENTIALS.username} • {BACKEND_DEMO_CREDENTIALS.password}
+              </div>
+            </div>
+
+            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#1E2024] border border-[#D9E2DE] dark:border-[#27272A] flex items-center justify-center shrink-0 group-hover:border-[#006B4F] transition-colors">
+              {quickFillApplied ? (
+                <Check className="w-4 h-4 text-[#006B4F] dark:text-emerald-400 animate-fade-in" />
+              ) : (
+                <ShieldCheck className="w-4 h-4 text-[#006B4F] dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              )}
+            </div>
+          </button>
         </div>
       </div>
     </div>
