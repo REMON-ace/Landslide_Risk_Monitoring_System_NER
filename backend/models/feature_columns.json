@@ -1,0 +1,15 @@
+[
+  "slope",
+  "aspect",
+  "elevation",
+  "curvature",
+  "dist_to_drainage",
+  "rainfall_24h",
+  "rainfall_72h",
+  "rainfall_7d",
+  "rainfall_intensity_peak",
+  "antecedent_rainfall_index",
+  "soil_moisture",
+  "dist_to_history",
+  "landslide_density_5km"
+]

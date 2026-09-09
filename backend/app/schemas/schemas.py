@@ -47,7 +47,7 @@ class PredictRiskIn(BaseModel):
     antecedent_rainfall_index: float
     soil_moisture: float
     dist_to_history: float
-    landslide_freq_district: int
+    landslide_density_5km: float
 
 
 class PredictRiskOut(BaseModel):
