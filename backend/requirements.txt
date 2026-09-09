@@ -14,3 +14,5 @@ shapely==2.0.6
 httpx==0.28.1
 twilio==9.4.4
 cloudinary==1.46.2
+joblib
+numpy
