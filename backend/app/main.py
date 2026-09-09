@@ -22,7 +22,7 @@ for table in Base.metadata.tables.values():
     except Exception as e:
         print(f"Table creation note for {table.name}: {e}")
 
-# Automatically add missing columns for existing SQLite database
+# Automatically add missing columns for existing database
 with engine.connect() as conn:
     try:
         conn.execute(text("ALTER TABLE field_reports ADD COLUMN severity VARCHAR(50) DEFAULT 'medium'"))
@@ -31,6 +31,11 @@ with engine.connect() as conn:
         pass
     try:
         conn.execute(text("UPDATE field_reports SET severity = 'medium' WHERE severity IS NULL OR severity = ''"))
+        conn.commit()
+    except Exception:
+        pass
+    try:
+        conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
         conn.commit()
     except Exception:
         pass
