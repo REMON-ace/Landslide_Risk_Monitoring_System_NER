@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg-app: #F5F7F6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #EAF5F0;
+  --border-color: #D9E2DE;
+  --border-subtle: #E5EDE9;
+  --text-main: #1F2937;
+  --text-muted: #4B5563;
+  --primary-gov: #006B4F;
+  --primary-gov-hover: #00523c;
+  --secondary-gov: #008060;
+  --light-gov: #EAF5F0;
+  --alert-red: #E63946;
+}
+
+.dark {
+  color-scheme: dark;
+  /* Strictly pitch black & neutral dark zinc — NO BLUE / NAVY */
+  --bg-app: #000000;
+  --bg-card: #0a0a0a;
+  --bg-card-hover: #141416;
+  --border-color: #27272a;
+  --border-subtle: #18181b;
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --primary-gov: #008060;
+  --primary-gov-hover: #006B4F;
+  --secondary-gov: #006B4F;
+  --light-gov: #122820;
+  --alert-red: #E63946;
+}
+
+/* Reusable Indian Government Theme Utility Classes */
+@layer components {
+  .gov-card {
+    @apply bg-white dark:bg-black border border-[#D9E2DE] dark:border-zinc-800 rounded-xl shadow-sm transition-all;
+  }
+
+  .gov-btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523c] text-white font-semibold text-xs transition-colors shadow-sm disabled:opacity-50;
+  }
+
+  .gov-btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-[#006B4F] text-[#006B4F] dark:text-emerald-400 hover:bg-[#EAF5F0] dark:hover:bg-emerald-950/30 font-semibold text-xs transition-colors shadow-sm disabled:opacity-50;
+  }
+
+  .gov-btn-emergency {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#E63946] hover:bg-[#c92a37] text-white font-semibold text-xs transition-colors shadow-md disabled:opacity-50;
+  }
+
+  .gov-input {
+    @apply w-full px-3 py-2 rounded-lg bg-white dark:bg-zinc-950 border border-[#D9E2DE] dark:border-zinc-800 text-[#1F2937] dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] text-xs transition-all;
+  }
+
+  .gov-table-header {
+    @apply bg-[#006B4F] text-white font-semibold text-xs;
+  }
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  overflow-x: hidden;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+/* Leaflet Map overrides for dark mode */
+.dark .leaflet-container {
+  background: #09090b !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #ffffff;
+  color: #09090b;
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background: #121212 !important;
+  color: #f4f4f5 !important;
+  border: 1px solid #27272a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+}
+
+.dark .leaflet-popup-tip {
+  background: #121212 !important;
+}
+
+/* Radar pulse animation */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 16px rgba(234, 88, 12, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
+  }
+}
+
+.animate-radar {
+  animation: radar-pulse 2s infinite ease-in-out;
+}
+
+@keyframes beacon-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.beacon-pulse {
+  animation: beacon-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Map tile visibility & contrast enhancements (darkens slightly, boosts road & boundary contrast) */
+.map-tiles-contrast {
+  filter: brightness(0.93) contrast(1.14) saturate(1.08);
+}
+
+.dark .map-tiles-contrast {
+  filter: brightness(0.88) contrast(1.22);
+}
+
+.map-tiles-satellite {
+  filter: brightness(0.92) contrast(1.18) saturate(1.12);
+}
+
+.map-tiles-overlay {
+  filter: contrast(1.25) brightness(1.05);
+}
+

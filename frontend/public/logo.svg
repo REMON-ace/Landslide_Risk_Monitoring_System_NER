@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#004d38"/>
+      <stop offset="60%" stop-color="#00291e"/>
+      <stop offset="100%" stop-color="#05100c"/>
+    </linearGradient>
+    <linearGradient id="mountGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#008060"/>
+      <stop offset="100%" stop-color="#004d38"/>
+    </linearGradient>
+    <linearGradient id="mountGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006B4F"/>
+      <stop offset="100%" stop-color="#003525"/>
+    </linearGradient>
+    <radialGradient id="beaconGlow" cx="42" cy="34" r="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ff7849" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#ea580c" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background rounded badge -->
+  <rect width="100" height="100" rx="22" fill="url(#bgGrad)"/>
+  <rect x="2" y="2" width="96" height="96" rx="20" stroke="#00a87e" stroke-width="1.5" stroke-opacity="0.4"/>
+  
+  <!-- Radar range rings -->
+  <circle cx="50" cy="50" r="42" stroke="#00a87e" stroke-width="1" stroke-opacity="0.25"/>
+  <circle cx="50" cy="50" r="28" stroke="#00a87e" stroke-width="1" stroke-dasharray="3 3" stroke-opacity="0.35"/>
+
+  <!-- Mountain terrain contours -->
+  <path d="M14 74 L38 38 L54 56 L66 42 L86 74 Z" fill="url(#mountGrad1)" stroke="#00a87e" stroke-width="1.5"/>
+  <path d="M38 38 L54 56 L66 42 L86 74 L50 74 Z" fill="url(#mountGrad2)" opacity="0.85"/>
+
+  <!-- Radar Beacon & Glow -->
+  <circle cx="38" cy="38" r="18" fill="url(#beaconGlow)"/>
+  <circle cx="38" cy="38" r="12" stroke="#ea580c" stroke-width="1.5" stroke-opacity="0.85"/>
+  <circle cx="38" cy="38" r="6" fill="#f97316"/>
+  <circle cx="38" cy="38" r="2.5" fill="#ffffff"/>
+
+  <!-- Landslide displacement fault line -->
+  <path d="M40 48 L44 55 L42 63 L46 72" stroke="#E63946" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="46" cy="72" r="1.5" fill="#ffffff"/>
+</svg>
