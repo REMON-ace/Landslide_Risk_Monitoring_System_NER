@@ -92,6 +92,9 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3001",
+        # Production Vercel deployment.
+        "https://landslide-risk-monitoring-system-ne.vercel.app",
+        # Retain the previously configured deployment URL in case it is used.
         "https://landslide-risk-monitoring-system-ner.vercel.app",
     ],
     allow_credentials=True,
