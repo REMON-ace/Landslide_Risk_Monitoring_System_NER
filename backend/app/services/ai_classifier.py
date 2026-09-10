@@ -145,7 +145,7 @@ Respond ONLY in valid JSON with this exact schema:
         res_data = json.loads(response.read().decode("utf-8"))
         candidate = res_data.get("candidates", [{}])[0]
         text_content = candidate.get("content", {}).get("parts", [{}])[0].get("text", "")
-        
+
         parsed = json.loads(text_content)
         category = parsed.get("hazard_category", "general_hazard")
         if category not in HAZARD_TAXONOMY:
