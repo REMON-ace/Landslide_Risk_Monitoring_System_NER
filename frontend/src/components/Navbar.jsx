@@ -33,8 +33,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
-  const isMock = import.meta.env.VITE_USE_MOCKS !== 'false';
-
   const navItems = [
     { path: '/', label: t('nav.dashboard'), icon: Layers },
     { path: '/map', label: t('nav.map'), icon: Map },
@@ -75,11 +73,6 @@ export default function Navbar() {
                   <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#EAF5F0] text-[#006B4F] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#006B4F]/20">
                     {t('common.pwa_badge', { defaultValue: 'PWA' })}
                   </span>
-                  {isMock && (
-                    <span className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                      {t('common.mock_badge', { defaultValue: 'MOCK' })}
-                    </span>
-                  )}
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-medium leading-tight">
                   {t('common.early_warning', { defaultValue: 'National Disaster Management • North Eastern Region • Meghalaya' })}
