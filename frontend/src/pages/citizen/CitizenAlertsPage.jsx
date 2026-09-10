@@ -8,6 +8,7 @@ import {
   Bell, MapPin, Clock, Filter, AlertTriangle,
   CheckCircle2, Info, RefreshCw,
 } from 'lucide-react';
+import { translateMessage } from '../../utils/translateMessage';
 
 const SEVERITY_CONFIG = {
   critical: {
@@ -157,14 +158,14 @@ export default function CitizenAlertsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${cfg.badge}`}>
-                      {alert.severity}
+                      {t(`severity.${alert.severity}_short`, alert.severity?.toUpperCase())}
                     </span>
                   </div>
                 </div>
 
                 {/* Message */}
                 <p className="text-sm font-semibold text-slate-800 dark:text-zinc-100 leading-relaxed">
-                  {alert.message}
+                  {translateMessage(alert.message, t)}
                 </p>
 
                 {/* Meta */}

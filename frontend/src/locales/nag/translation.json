@@ -24,6 +24,7 @@
     "subtext_high_risk": "Mati bhanga bepar",
     "subtext_roads": "NH-206 aru NH-40 Rasta",
     "subtext_alerts": "Manu nemite alert",
+    "subtext_alerts_count": "{{count}} Choli Thaka",
     "subtext_reports": "Public aru officer khan pora"
   },
   "severity": {
@@ -662,9 +663,24 @@
     "alerts": "Alerts",
     "verified_view": "Verified Resident View",
     "verified_badge": "Verified",
+    "verified_resident": "Verified Resident",
+    "welcome_back": "Bhal Pora Ahebi, {{name}}",
+    "default_user": "Manu",
+    "monitoring_sub": "{{district}} karne real-time landslide monitoring. Hoshiyar thakibi aru khobor dikene komiti ke modot kuribi.",
+    "safe_district": "Apuni thaka district eku bepar nai abhi.",
     "sign_out": "Bahar jabi",
     "early_warning": "NER Landslide Early Warning",
     "emergency_sdrf": "Emergency: SDRF 1077"
+  },
+  "alert_messages": {
+    "critical_evacuate": "BISHI BEPAR: Mati phisli jabole asey. Jaldi jaga chari di. Sarkari kotha mani lobi.",
+    "high_nh206": "Bishi boroshon girishe. Mati phislibole pare — NH-206 rasta te najabi.",
+    "high_this_area": "Bishi boroshon girishe. Mati phislibole pare — itu jaga te najabi.",
+    "high_prone_areas": "Bishi boroshon girishe. Mati phislibole pare — mati phisla jaga te najabi.",
+    "heavy_rainfall_high_risk": "Bishi boroshon girishe. Mati phislibole bishi bepar asey.",
+    "road_closure": "Mati phisla karne district te rasta bondo hoishe.",
+    "ground_hazard_report": "Field official khan pora hazard report aheishe.",
+    "imminent_risk_detected": "BISHI BEPAR: Mati phisla bepar ase. Jaldi jaga chari di."
   },
   "register": {
     "title": "NER Landslide Portal te Register Kobi",

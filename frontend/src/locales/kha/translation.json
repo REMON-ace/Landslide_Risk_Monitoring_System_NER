@@ -24,6 +24,7 @@
     "subtext_high_risk": "Ki jaka ba lah ban twad kloi",
     "subtext_roads": "Surok Bah NH-206 & NH-40",
     "subtext_alerts": "Jingmaham mardor",
+    "subtext_alerts_count": "{{count}} Ba dang trei",
     "subtext_reports": "Ripot na ki paidbah bad nongtrei"
   },
   "severity": {
@@ -661,10 +662,25 @@
     "field_reports": "Ripot Jingjia",
     "alerts": "Ki Jingmaham",
     "verified_view": "Nongshongshnong ba la pynskhem",
-    "verified_badge": "Verified",
+    "verified_badge": "La Pynskhem",
+    "verified_resident": "Nongshongshnong ba la Pynskhem",
+    "welcome_back": "Khublei wanphai, {{name}}",
+    "default_user": "Nongshongshnong",
+    "monitoring_sub": "Jingpeit bniah ia ka jingtwad khyndew ha {{district}}. Tip lypa bad iarap ia ka shnong da kaba phah ripot.",
+    "safe_district": "Ka district jong phi ka shngiain mynta.",
     "sign_out": "Mih noh",
     "early_warning": "NER Landslide Early Warning",
     "emergency_sdrf": "Emergency: SDRF 1077"
+  },
+  "alert_messages": {
+    "critical_evacuate": "SHYRKHEI BHA: Imminent landslide risk. Kynriah noh mardor. Bud ia ki hukum jong ki bor.",
+    "high_nh206": "Sliew u slap jur. Ka jingtwad khyndew ka lah ban jia — kiar na ka surok NH-206.",
+    "high_this_area": "Sliew u slap jur. Ka jingtwad khyndew ka lah ban jia — kiar na kane ka jaka.",
+    "high_prone_areas": "Sliew u slap jur. Ka jingtwad khyndew ka lah ban jia — kiar na ki jaka ba ju twad khyndew.",
+    "heavy_rainfall_high_risk": "Sliew u slap jur. Don ka jingma ba khraw ban twad khyndew.",
+    "road_closure": "La khang ia ka surok ha district namar ka jingtwad khyndew.",
+    "ground_hazard_report": "Ripot jingjia ba la phah da ki nongpeit shnong.",
+    "imminent_risk_detected": "SHYRKHEI BHA: Lap ia ka jingma ba jur ban twad khyndew. Kynriah mardor."
   },
   "register": {
     "title": "Pynshondurt (Register) ha NER Landslide Portal",

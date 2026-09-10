@@ -24,6 +24,7 @@
     "subtext_high_risk": "চিং কায়বা য়াবগী চাং",
     "subtext_roads": "NH-206 অমসুং NH-40 লম্বীশিং",
     "subtext_alerts": "মীয়ামগী চেকশিনৱা",
+    "subtext_alerts_count": "{{count}} সক্ৰিয়",
     "subtext_reports": "মীয়াম অমসুং ওফিসারশিংদগী"
   },
   "severity": {
@@ -662,9 +663,24 @@
     "alerts": "Alerts",
     "verified_view": "Verified Resident View",
     "verified_badge": "Verified",
+    "verified_resident": "Verified Resident",
+    "welcome_back": "Taramna Okchari, {{name}}",
+    "default_user": "Meyam",
+    "monitoring_sub": "{{district}}gi real-time leibak chenba yengsinba. Cheksinna leiyu amasung report touduna khunnai ngak-senbiyu.",
+    "safe_district": "Naharagi district asi houjik safana lei.",
     "sign_out": "Thadokpa",
     "early_warning": "NER Landslide Early Warning",
     "emergency_sdrf": "Emergency: SDRF 1077"
+  },
+  "alert_messages": {
+    "critical_evacuate": "YAMNA KHUDONGTHIBA: Leibak chenbagi achouba khudongthiba lei. Houjikmak mapham thadok-u. Sarkar-gi yathang inbiyu.",
+    "high_nh206": "Akanba nong chuba thengle. Ching kayba yai — NH-206 nakanda chatpa thadok-u.",
+    "high_this_area": "Akanba nong chuba thengle. Ching kayba yai — mapham asida chatpa thadok-u.",
+    "high_prone_areas": "Akanba nong chuba thengle. Ching kayba yai — ching kayba yaba maphamsida chatpa thadok-u.",
+    "heavy_rainfall_high_risk": "Akanba nong chuba thengle. Ching kaybagi achouba risk lei.",
+    "road_closure": "Leibak chenbagidamak district asida lambi thingjinba pao fang-e.",
+    "ground_hazard_report": "Field official-singna pirakpa leibak kaybagi report.",
+    "imminent_risk_detected": "YAMNA KHUDONGTHIBA: Leibak chenbagi khudongthiba thengle. Houjikmak mapham thadok-u."
   },
   "register": {
     "title": "NER Landslide Portal-da Hming Haplu",

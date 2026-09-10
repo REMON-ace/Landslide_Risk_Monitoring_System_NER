@@ -55,6 +55,7 @@
     "subtext_high_risk": "Critical slope failure index",
     "subtext_roads": "NH-206 & NH-40 passes",
     "subtext_alerts": "Community SMS & App sirens",
+    "subtext_alerts_count": "{{count}} Active",
     "subtext_reports": "Crowdsourced & SDRF logs"
   },
   "dashboard": {
@@ -531,9 +532,24 @@
     "alerts": "Alerts",
     "verified_view": "Verified Resident View",
     "verified_badge": "Verified",
+    "verified_resident": "Verified Resident",
+    "welcome_back": "Welcome back, {{name}}",
+    "default_user": "Citizen",
+    "monitoring_sub": "Real-time landslide monitoring for {{district}}. Stay informed and help your community by reporting hazards.",
+    "safe_district": "Your district is currently safe.",
     "sign_out": "Sign Out",
     "early_warning": "NER Landslide Early Warning",
     "emergency_sdrf": "Emergency: SDRF 1077"
+  },
+  "alert_messages": {
+    "critical_evacuate": "CRITICAL: Imminent landslide risk. Evacuate immediately. Follow official instructions.",
+    "high_nh206": "Heavy rainfall detected. Risk of slope failure — avoid travel near NH-206.",
+    "high_this_area": "Heavy rainfall detected. Risk of slope failure — avoid travel in this area.",
+    "high_prone_areas": "Heavy rainfall detected. Risk of slope failure — avoid travel near landslide-prone areas.",
+    "heavy_rainfall_high_risk": "Heavy rainfall detected. High risk of slope failure.",
+    "road_closure": "Road closure reported in your district due to landslide activity.",
+    "ground_hazard_report": "Ground hazard report submitted by field responder.",
+    "imminent_risk_detected": "CRITICAL: Imminent landslide risk detected. Evacuate immediately."
   },
   "register": {
     "title": "Register for NER Landslide Portal",

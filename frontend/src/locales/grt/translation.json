@@ -24,6 +24,7 @@
     "subtext_high_risk": "A·a be·ani kenani",
     "subtext_roads": "NH-206 & NH-40 Ramarang",
     "subtext_alerts": "Kenani kattarang",
+    "subtext_alerts_count": "{{count}} U·iatenggipa",
     "subtext_reports": "Manderang & Officer-rangni"
   },
   "severity": {
@@ -662,9 +663,24 @@
     "alerts": "Alerts",
     "verified_view": "Verified Resident View",
     "verified_badge": "Verified",
+    "verified_resident": "Verified Resident",
+    "welcome_back": "Rimchaksoa, {{name}}",
+    "default_user": "Songni Mande",
+    "monitoring_sub": "{{district}}-na real-time a·a ga·akaniko nirikani. Seng·e dongbo aro report ka·e song-jinmako dakchakbo.",
+    "safe_district": "Na·simangni district da·o chel·chake donga.",
     "sign_out": "Ong·katbo",
     "early_warning": "NER Landslide Early Warning",
     "emergency_sdrf": "Emergency: SDRF 1077"
+  },
+  "alert_messages": {
+    "critical_evacuate": "KENBEGNIGIPA: A·a ga·akaniko niksoenga. Rang·san katangbo. Sorkarini ku·pattianiko ja·rikbo.",
+    "high_nh206": "Mikka jimesoenga. A·a ga·akna kena donga — NH-206 rama gita re·chakatnabe.",
+    "high_this_area": "Mikka jimesoenga. A·a ga·akna kena donga — ia biap gita re·chakatnabe.",
+    "high_prone_areas": "Mikka jimesoenga. A·a ga·akna kena donga — a·a ga·akronggipa biaprango re·chakatnabe.",
+    "heavy_rainfall_high_risk": "Mikka jimesoenga. A·a ga·akanina dal·begipa kenani donga.",
+    "road_closure": "A·a ga·akani a·sel district-o rama champengako u·iata.",
+    "ground_hazard_report": "Field official-rangni a·a be·ani report sokbaaha.",
+    "imminent_risk_detected": "KENBEGNIGIPA: A·a ga·akani kenani donga. Rang·san biapko watbo."
   },
   "register": {
     "title": "NER Landslide Portal-o Biming Sebo",

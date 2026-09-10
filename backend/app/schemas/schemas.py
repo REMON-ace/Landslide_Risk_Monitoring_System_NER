@@ -253,6 +253,7 @@ class LoginOut(BaseModel):
     token: str
     role: str
     district: Optional[str]
+    is_verified: bool = False
 
 # Registration schemas
 class UserRegisterIn(BaseModel):

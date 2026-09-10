@@ -9,6 +9,7 @@ import {
   Bell, MapPin, AlertTriangle, ShieldCheck, ChevronRight,
   Info, Clock, CheckCircle2,
 } from 'lucide-react';
+import { translateMessage } from '../../utils/translateMessage';
 
 const SEVERITY_CONFIG = {
   critical: { dot: 'bg-red-500',    badge: 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
@@ -51,7 +52,7 @@ export default function CitizenDashboard() {
               <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">{t('citizen.verified_badge', 'Verified Resident')}</span>
             </div>
             <h1 className="text-lg sm:text-xl font-black">
-              {t('citizen.welcome_back', 'Welcome back, {{name}}', { name: user?.username || 'Citizen' })}
+              {t('citizen.welcome_back', 'Welcome back, {{name}}', { name: user?.username || t('citizen.default_user', 'Citizen') })}
             </h1>
             <p className="text-[11px] opacity-70 max-w-sm">
               {t('citizen.monitoring_sub', 'Real-time landslide monitoring for {{district}}. Stay informed and help your community by reporting hazards.', { district: user?.district || 'East Khasi Hills' })}
@@ -61,7 +62,7 @@ export default function CitizenDashboard() {
             <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
               <Bell className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold opacity-80">{t('summary.subtext_alerts', '{{count}} Active', { count: alerts.length })}</span>
+            <span className="text-[10px] font-bold opacity-80">{t('summary.subtext_alerts_count', '{{count}} Active', { count: alerts.length })}</span>
           </div>
         </div>
       </div>
@@ -117,10 +118,12 @@ export default function CitizenDashboard() {
                       <span className="font-mono text-[10px] text-slate-400">{alert.alert_id}</span>
                     </div>
                     <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${cfg.badge}`}>
-                      {alert.severity}
+                      {t(`severity.${alert.severity}_short`, alert.severity?.toUpperCase())}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed line-clamp-2">{alert.message}</p>
+                  <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed line-clamp-2">
+                    {translateMessage(alert.message, t)}
+                  </p>
                   <div className="flex items-center gap-3 mt-1.5 text-[10px] text-slate-400">
                     <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{alert.village || alert.zone_id}</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(alert.timestamp || alert.sent_at).toLocaleTimeString()}</span>

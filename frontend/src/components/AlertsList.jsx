@@ -9,6 +9,7 @@ import {
   MapPin,
   History,
 } from 'lucide-react';
+import { translateMessage } from '../utils/translateMessage';
 
 export default function AlertsList({ alerts = [], onOpenCreateModal }) {
   const { t } = useTranslation();
@@ -113,7 +114,7 @@ export default function AlertsList({ alerts = [], onOpenCreateModal }) {
                 </div>
 
                 <p className="text-xs font-medium text-slate-800 dark:text-zinc-200 leading-relaxed">
-                  {alert.message}
+                  {translateMessage(alert.message, t)}
                 </p>
 
                 <div className="flex items-center justify-between pt-1 text-[10px] text-slate-500 dark:text-zinc-400">

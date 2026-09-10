@@ -25,6 +25,7 @@ import {
   MapPin,
   Map,
 } from 'lucide-react';
+import { translateMessage } from '../utils/translateMessage';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -298,7 +299,7 @@ export default function PublicAlertsPage() {
 
                       {/* Main Message Headline */}
                       <p className="text-sm font-black text-slate-900 dark:text-zinc-100 leading-snug group-hover:text-[#006B4F] dark:group-hover:text-emerald-400 transition-colors">
-                        {alert.message}
+                        {translateMessage(alert.message, t)}
                       </p>
 
                       {/* Detailed Description of the Problem */}
@@ -307,7 +308,7 @@ export default function PublicAlertsPage() {
                           <strong className="block text-[10px] uppercase font-bold text-[#006B4F] dark:text-emerald-400 mb-1">
                             {t('alerts_page.detailed_advisory', 'Detailed Hazard Situation & Advisory:')}
                           </strong>
-                          <p>{alert.description || alert.details}</p>
+                          <p>{translateMessage(alert.description || alert.details, t)}</p>
                         </div>
                       )}
 

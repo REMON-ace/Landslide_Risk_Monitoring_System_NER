@@ -14,6 +14,7 @@ import {
   Layers,
   CheckCircle2,
 } from 'lucide-react';
+import { translateMessage } from '../utils/translateMessage';
 
 // Custom beacon marker for modal map
 const createBeaconIcon = (severity) => {
@@ -164,7 +165,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
               {t('alert_modal.official_advisory', { defaultValue: 'Official Early Warning Advisory:' })}
             </span>
             <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 leading-snug">
-              {alert.message}
+              {translateMessage(alert.message, t)}
             </p>
           </div>
 
@@ -174,7 +175,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
               <strong className="block text-[10px] uppercase font-bold text-[#006B4F] dark:text-emerald-400">
                 {t('alert_modal.detailed_description', { defaultValue: 'Detailed Situation Description:' })}
               </strong>
-              <p>{alert.description || alert.details}</p>
+              <p>{translateMessage(alert.description || alert.details, t)}</p>
             </div>
           )}
 

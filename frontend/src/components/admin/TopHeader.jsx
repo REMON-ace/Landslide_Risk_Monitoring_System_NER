@@ -24,6 +24,7 @@ import {
   ExternalLink,
   ShieldCheck,
 } from 'lucide-react';
+import { translateMessage } from '../../utils/translateMessage';
 
 export default function TopHeader({
   onToggleSidebar,
@@ -329,14 +330,14 @@ export default function TopHeader({
                           {alert.alert_id}
                         </span>
                         <span className="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase bg-red-100 dark:bg-red-950/50 text-[#E63946]">
-                          {alert.severity}
+                          {t(`severity.${alert.severity}_short`, alert.severity?.toUpperCase())}
                         </span>
                       </div>
                       <p className="text-xs text-slate-800 dark:text-zinc-200 line-clamp-2">
-                        {alert.message}
+                        {translateMessage(alert.message, t)}
                       </p>
                       <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-                        <span>Sector: {alert.village || alert.zone_id}</span>
+                        <span>{t('alerts_page.sector', 'Sector')}: {alert.village || alert.zone_id}</span>
                         <span>{new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     </div>

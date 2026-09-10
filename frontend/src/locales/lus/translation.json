@@ -24,6 +24,7 @@
     "subtext_high_risk": "Lei min theihna sang",
     "subtext_roads": "NH-206 & NH-40 Kawngpui",
     "subtext_alerts": "Mipui hriattirna",
+    "subtext_alerts_count": "{{count}} Chhuak Mek",
     "subtext_reports": "Mipui leh sorkar thawktute hnen atangin"
   },
   "severity": {
@@ -661,10 +662,25 @@
     "field_reports": "Field Reports",
     "alerts": "Alerts",
     "verified_view": "Finfiah Tualchhung Mi",
-    "verified_badge": "Verified",
+    "verified_badge": "Finfiah",
+    "verified_resident": "Finfiah Tualchhung Mi",
+    "welcome_back": "Chibai, {{name}}",
+    "default_user": "Tualchhung Mi",
+    "monitoring_sub": "{{district}} tana real-time lei min enzui na. Inralring reng la, report pein khawtlang pui rawh.",
+    "safe_district": "I awmna district hi a him mek.",
     "sign_out": "Chhuak rawh",
     "early_warning": "NER Landslide Early Warning",
     "emergency_sdrf": "Emergency: SDRF 1077"
+  },
+  "alert_messages": {
+    "critical_evacuate": "HLAUHAWM ZUAL: Min hlauhawm tak a awm. Chhuak nghal rawh. Sorkar thurawn zawm rawh.",
+    "high_nh206": "Ruah nasa tak a sur. Lei min theih a ni — NH-206 kawng kual velah kal suh.",
+    "high_this_area": "Ruah nasa tak a sur. Lei min theih a ni — he lai hmunah hian kal suh.",
+    "high_prone_areas": "Ruah nasa tak a sur. Lei min theih a ni — lei min awlsamna hmunah kal suh.",
+    "heavy_rainfall_high_risk": "Ruah nasa tak a sur. Lei min hlauhawmna a sang hle.",
+    "road_closure": "Lei min vangin i district kawng a ping tih hriattir a ni.",
+    "ground_hazard_report": "Field official te hnen atanga lei hlauhawm report dawn a ni.",
+    "imminent_risk_detected": "HLAUHAWM ZUAL: Min theihna sang tak a awm. Chhuak nghal rawh."
   },
   "register": {
     "title": "NER Landslide Portal-ah Inhmingchhuah Rawh",
