@@ -18,12 +18,19 @@ class Settings(BaseSettings):
     sms_demo_recipient: str = ""
 
     app_env: str = "development"
+    # Production must fail visibly if the trained model is unavailable.
+    # Enable the empirical fallback only for an explicitly configured dev/demo run.
+    allow_empirical_fallback: bool = False
+    model_version: str = "unversioned"
+    google_oauth_client_id: str = ""
+    # JSON content of a Firebase service-account key. Keep it backend-only.
+    firebase_service_account_json: str = ""
 
     cloudinary_cloud_name: str = ""
     cloudinary_api_key: str = ""
     cloudinary_api_secret: str = ""
 
-    # Google Gemini API Key for AI Hazard Problem Classification & Vision Analysis
+    # Google Gemini API Key for AI Hazard Classification, Vision Analysis & Chat Assistant
     gemini_api_key: str = ""
 
     class Config:

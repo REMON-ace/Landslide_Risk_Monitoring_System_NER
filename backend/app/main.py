@@ -1,6 +1,7 @@
 """
 FastAPI application entry point — NER Landslide Early Warning Platform.
 """
+from sqlalchemy import inspect as sa_inspect
 import os
 
 from fastapi import FastAPI
@@ -10,7 +11,7 @@ from app.core.config import settings
 from app.db.session import engine
 from app.db.base import Base
 import app.models.models  # noqa: F401
-from app.routers import risk, weather, roads, reports, alerts, dashboard, auth, sync
+from app.routers import risk, weather, roads, reports, alerts, dashboard, auth, sync, chat, notifications
 
 from sqlalchemy import text
 
@@ -26,7 +27,7 @@ if engine.dialect.name == "sqlite":
 
 # Automatically add missing columns for existing database.
 # Uses introspection so it works on both PostgreSQL and SQLite.
-from sqlalchemy import inspect as sa_inspect
+
 
 def _add_column_if_missing(engine, table: str, column: str, col_type: str, default=None):
     """Maintain the local SQLite fallback without altering PostgreSQL at startup."""
@@ -41,13 +42,16 @@ def _add_column_if_missing(engine, table: str, column: str, col_type: str, defau
             return
         default_clause = f" DEFAULT {default}" if default is not None else ""
         with engine.connect() as conn:
-            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause}"))
+            conn.execute(
+                text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause}"))
             conn.commit()
         print(f"Migration: added {table}.{column}")
     except Exception as e:
         print(f"Migration note ({table}.{column}): {e}")
 
-_add_column_if_missing(engine, "field_reports", "severity", "VARCHAR(50)", "'medium'")
+
+_add_column_if_missing(engine, "field_reports",
+                       "severity", "VARCHAR(50)", "'medium'")
 _add_column_if_missing(engine, "users", "is_verified", "BOOLEAN", "FALSE")
 _add_column_if_missing(engine, "users", "proof_path", "VARCHAR(500)")
 _add_column_if_missing(engine, "users", "created_at",
@@ -60,7 +64,8 @@ _add_column_if_missing(engine, "alerts", "description", "TEXT")
 if engine.dialect.name == "sqlite":
     try:
         with engine.connect() as conn:
-            conn.execute(text("UPDATE field_reports SET severity = 'medium' WHERE severity IS NULL OR severity = ''"))
+            conn.execute(text(
+                "UPDATE field_reports SET severity = 'medium' WHERE severity IS NULL OR severity = ''"))
             conn.commit()
     except Exception:
         pass
@@ -87,6 +92,9 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3001",
+        # Production Vercel deployment.
+        "https://landslide-risk-monitoring-system-ne.vercel.app",
+        # Retain the previously configured deployment URL in case it is used.
         "https://landslide-risk-monitoring-system-ner.vercel.app",
     ],
     allow_credentials=True,
@@ -98,13 +106,18 @@ app.add_middleware(
 API_PREFIX = "/api"
 
 app.include_router(risk.router, prefix=API_PREFIX, tags=["Risk & Prediction"])
-app.include_router(weather.router, prefix=API_PREFIX, tags=["Weather & Sensors"])
-app.include_router(roads.router, prefix=API_PREFIX, tags=["GIS / Infrastructure"])
+app.include_router(weather.router, prefix=API_PREFIX,
+                   tags=["Weather & Sensors"])
+app.include_router(roads.router, prefix=API_PREFIX,
+                   tags=["GIS / Infrastructure"])
 app.include_router(reports.router, prefix=API_PREFIX, tags=["Field Reporting"])
-app.include_router(alerts.router, prefix=API_PREFIX, tags=["Alerts & Notifications"])
+app.include_router(alerts.router, prefix=API_PREFIX,
+                   tags=["Alerts & Notifications"])
 app.include_router(dashboard.router, prefix=API_PREFIX, tags=["Dashboard"])
 app.include_router(sync.router, prefix=API_PREFIX, tags=["Offline Sync"])
 app.include_router(auth.router, prefix=API_PREFIX, tags=["Auth"])
+app.include_router(chat.router, prefix=API_PREFIX, tags=["AI Assistant"])
+app.include_router(notifications.router, prefix=API_PREFIX, tags=["Notifications"])
 
 
 @app.get("/", tags=["Health"])

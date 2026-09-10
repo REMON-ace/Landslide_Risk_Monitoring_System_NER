@@ -8,6 +8,7 @@ import StatsBanner from '../components/landing/StatsBanner';
 import MissionSection from '../components/landing/MissionSection';
 import CtaSection from '../components/landing/CtaSection';
 import LandingFooter from '../components/landing/LandingFooter';
+import AiRiskAssistant from '../components/admin/AiRiskAssistant';
 
 export default function LandingPage() {
   useEffect(() => {
@@ -50,6 +51,9 @@ export default function LandingPage() {
 
       {/* 9. Footer */}
       <LandingFooter />
+
+      {/* 10. Floating AI Risk Assistant */}
+      <AiRiskAssistant />
     </div>
   );
 }

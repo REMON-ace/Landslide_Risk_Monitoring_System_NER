@@ -39,19 +39,25 @@ export default function PredictorPage() {
 
   const [features, setFeatures] = useState(defaultFeatures);
   const [prediction, setPrediction] = useState(null);
+  const [error, setError] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
 
   const handleSlider = (key, val) => {
     setFeatures((prev) => ({ ...prev, [key]: parseFloat(val) }));
+    setPrediction(null);
+    setError(null);
   };
 
   const handleRunPredict = async () => {
     setIsRunning(true);
+    setError(null);
     try {
       const res = await predictRisk(features);
       setPrediction(res);
     } catch (err) {
       console.error('Prediction failed:', err);
+      setPrediction(null);
+      setError(err.message || 'Unable to generate a prediction.');
     } finally {
       setIsRunning(false);
     }
@@ -60,6 +66,7 @@ export default function PredictorPage() {
   const resetFeatures = () => {
     setFeatures(defaultFeatures);
     setPrediction(null);
+    setError(null);
   };
 
   const sliders = [
@@ -91,9 +98,9 @@ export default function PredictorPage() {
     <div className="space-y-6 pb-16">
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
-        kicker={t('predictor.subtitle', { defaultValue: 'Decision Support Workbench' })}
-        title={t('predictor.title', { defaultValue: 'Landslide Risk Prediction & Simulation' })}
-        description={t('predictor.result_desc', { defaultValue: 'Simulate slope destabilization thresholds under varying hydrological and precipitation regimes using the empirical hazard evaluation model.' })}
+        kicker="Decision Support Workbench"
+        title="Landslide Risk Prediction & Simulation"
+        description="Simulate slope destabilization thresholds under varying hydrological and precipitation regimes using the empirical hazard evaluation model."
         badge="POST /predict-risk"
         actions={
           <>
@@ -102,7 +109,7 @@ export default function PredictorPage() {
               className="px-3.5 py-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:text-[#006B4F] text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t('predictor.reset_btn', { defaultValue: 'Reset Values' })}</span>
+              <span>Reset Values</span>
             </button>
 
             <button
@@ -111,7 +118,7 @@ export default function PredictorPage() {
               className="px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
             >
               <Play className="w-3.5 h-3.5" />
-              <span>{isRunning ? t('predictor.running', { defaultValue: 'Calculating Score...' }) : t('predictor.run_btn', { defaultValue: 'Run Simulation' })}</span>
+              <span>{isRunning ? 'Calculating Score...' : 'Run Simulation'}</span>
             </button>
           </>
         }
@@ -164,16 +171,21 @@ export default function PredictorPage() {
         {/* Right Column: Decision Support Evaluation Card */}
         <div className="lg:col-span-5 space-y-5 sticky top-20">
           <SectionCard
-            kicker={t('predictor.eval_output', 'Evaluation Output')}
-            title={t('predictor.hazard_score_title', 'Hazard Score & Advisory')}
-            subtitle={t('predictor.hazard_score_subtitle', 'Calculated response from empirical slope model')}
+            kicker="Evaluation Output"
+            title="Hazard Score & Advisory"
+            subtitle="Server-side trained-model evaluation"
           >
+            {error && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                {error}
+              </div>
+            )}
             {prediction ? (
               <div className="space-y-5">
                 {/* Visual Gauge Header */}
                 <div className="p-6 rounded-xl bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-center space-y-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    {t('predictor.predicted_instability_score', 'Predicted Instability Score')}
+                    Predicted Instability Score
                   </span>
                   <div className="text-4xl sm:text-5xl font-black font-mono tracking-tight text-slate-900 dark:text-white">
                     {prediction.risk_score}
@@ -181,41 +193,44 @@ export default function PredictorPage() {
                   <div>
                     <RiskBadge severity={prediction.severity} size="md" />
                   </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
+                    {prediction.model_source === 'trained_model' ? 'Trained ML model' : 'Empirical fallback'} · {prediction.model_version}
+                  </p>
                 </div>
 
                 {/* Advisory Recommendations */}
                 <div className="p-4 rounded-xl border border-[#D9E2DE] dark:border-[#27272A] space-y-2.5 text-xs">
                   <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-[#006B4F] dark:text-emerald-400" />
-                    <span>{t('predictor.operational_advisory', 'Operational Advisory')}</span>
+                    <span>Operational Advisory</span>
                   </h4>
                   <p className="text-slate-600 dark:text-zinc-300 leading-relaxed">
                     {prediction.severity === 'critical'
-                      ? t('advisory.critical_desc', 'Immediate ground evacuation protocol indicated. Arterial road cut inspection required immediately; pore-water pressure exceeds safety factor threshold.')
+                      ? 'Immediate ground evacuation protocol indicated. Arterial road cut inspection required immediately; pore-water pressure exceeds safety factor threshold.'
                       : prediction.severity === 'high'
-                      ? t('advisory.high_desc', 'High probability of localized debris run and rock boulder release. Dispatch SDRF reconnaissance team and monitor culvert discharge.')
+                      ? 'High probability of localized debris run and rock boulder release. Dispatch SDRF reconnaissance team and monitor culvert discharge.'
                       : prediction.severity === 'medium'
-                      ? t('advisory.medium_desc', 'Moderate slope sensitivity. Soil moisture saturation nearing threshold; activate precautionary surveillance.')
-                      : t('advisory.low_desc', 'Baseline conditions within tolerable threshold. Normal civil monitoring protocol.')}
+                      ? 'Moderate slope sensitivity. Soil moisture saturation nearing threshold; activate precautionary surveillance.'
+                      : 'Baseline conditions within tolerable threshold. Normal civil monitoring protocol.'}
                   </p>
                 </div>
 
                 {/* Sensitivity Table */}
                 <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-900/50 border border-[#D9E2DE] dark:border-[#27272A] space-y-2 text-xs">
                   <span className="font-bold text-slate-700 dark:text-zinc-300 block">
-                    {t('predictor.driving_params', 'Driving Parameters in Simulation')}
+                    Driving Parameters in Simulation
                   </span>
                   <div className="space-y-1 font-mono text-[11px] text-slate-500 dark:text-zinc-400">
                     <div className="flex justify-between">
-                      <span>{t('predictor.slope_label', 'Slope:')}</span>
+                      <span>Slope:</span>
                       <strong className="text-slate-800 dark:text-zinc-200">{features.slope}°</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>{t('predictor.rain_24h_label', '24h Rain:')}</span>
+                      <span>24h Rain:</span>
                       <strong className="text-slate-800 dark:text-zinc-200">{features.rainfall_24h} mm</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>{t('predictor.soil_sat_label', 'Soil Saturation:')}</span>
+                      <span>Soil Saturation:</span>
                       <strong className="text-slate-800 dark:text-zinc-200">{(features.soil_moisture * 100).toFixed(0)}%</strong>
                     </div>
                   </div>
@@ -227,10 +242,10 @@ export default function PredictorPage() {
                   <Gauge className="w-6 h-6" />
                 </div>
                 <h4 className="font-bold text-sm text-slate-800 dark:text-white">
-                  {t('predictor.simulation_ready', 'Simulation Ready')}
+                  Simulation Ready
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto">
-                  {t('predictor.ready_desc', 'Adjust terrain gradient and precipitation parameters on the left and click Run Simulation to query the backend model.')}
+                  Adjust terrain gradient and precipitation parameters on the left and click <strong>Run Simulation</strong> to query the backend model.
                 </p>
                 <button
                   onClick={handleRunPredict}
@@ -238,7 +253,7 @@ export default function PredictorPage() {
                   className="px-4 py-2 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white text-xs font-bold transition-all shadow-sm inline-flex items-center gap-2"
                 >
                   <Play className="w-3.5 h-3.5" />
-                  <span>{t('predictor.run_initial_pred', 'Run Initial Prediction')}</span>
+                  <span>Run Initial Prediction</span>
                 </button>
               </div>
             )}

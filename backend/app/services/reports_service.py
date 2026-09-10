@@ -94,29 +94,41 @@ def create_report(
     db.commit()
     db.refresh(report)
 
-    # Automatically create a corresponding Alert in the database so posted reports show in Alerts
-    try:
-        first_zone = db.query(Zone).first()
-        if first_zone:
-            alert_id = f"AL-{report_id.replace('FR-', '')}"
-            msg = description if description else f"Field hazard report submitted near ({lat:.4f}, {lng:.4f})."
-            alert = Alert(
-                alert_id=alert_id,
-                zone_id=first_zone.id,
-                severity=SeverityEnum(severity) if severity else SeverityEnum.medium,
-                message=msg,
-                description=description,
-                language=language or "en",
-                channels=["app", "field_report"],
-                sent_at=timestamp or datetime.now(timezone.utc),
-                recipients_count=150,
-                lat=lat,
-                lng=lng,
-            )
-            db.add(alert)
-            db.commit()
-    except Exception as e:
-        print(f"[NOTE] Auto alert creation skipped for {report_id}: {e}")
+    # Official reports are verified operational events: publish an alert and
+    # notify subscribed residents. Citizen observations remain in the review
+    # queue until an authority verifies or escalates them.
+    if report.reporter_type == ReporterTypeEnum.official:
+        try:
+            first_zone = db.query(Zone).first()
+            if first_zone:
+                alert_id = f"AL-{report_id.replace('FR-', '')}"
+                msg = description if description else f"Field hazard report submitted near ({lat:.4f}, {lng:.4f})."
+                alert = Alert(
+                    alert_id=alert_id,
+                    zone_id=first_zone.id,
+                    severity=SeverityEnum(severity) if severity else SeverityEnum.medium,
+                    message=msg,
+                    description=description,
+                    language=language or "en",
+                    channels=["app", "field_report"],
+                    sent_at=timestamp or datetime.now(timezone.utc),
+                    recipients_count=150,
+                    lat=lat,
+                    lng=lng,
+                )
+                db.add(alert)
+                db.commit()
+                # A submitted field report becomes a live community alert.
+                from app.services.fcm_service import send_alert_notification
+                send_alert_notification(
+                    db,
+                    title=f"{severity or 'medium'} field hazard report",
+                    body=msg,
+                    alert_id=alert_id,
+                    severity=severity or "medium",
+                )
+        except Exception as e:
+            print(f"[NOTE] Official report alert creation skipped for {report_id}: {e}")
 
     return report
 

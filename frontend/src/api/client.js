@@ -1,7 +1,6 @@
 // API Client Module — strictly adheres to API_CONTRACT (1).md
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
-const requestTimeout = Number(import.meta.env.VITE_API_TIMEOUT_MS || 20_000);
 
 // Generic fetch wrapper with Bearer token injection
 async function request(endpoint, options = {}) {
@@ -20,23 +19,7 @@ async function request(endpoint, options = {}) {
   }
 
   const url = `${BASE_URL.replace(/\/$/, '')}${endpoint}`;
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), requestTimeout);
-  const onExternalAbort = () => controller.abort();
-  options.signal?.addEventListener('abort', onExternalAbort, { once: true });
-
-  let response;
-  try {
-    response = await fetch(url, { ...options, headers, signal: controller.signal });
-  } catch (error) {
-    if (controller.signal.aborted) {
-      throw new Error('The server did not respond in time. Check that the backend is running and try again.');
-    }
-    throw error;
-  } finally {
-    window.clearTimeout(timeoutId);
-    options.signal?.removeEventListener('abort', onExternalAbort);
-  }
+  const response = await fetch(url, { ...options, headers });
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
@@ -206,6 +189,26 @@ export async function register(formData) {
   });
 }
 
+export async function authenticateWithGoogle(credential) {
+  const result = await request('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ credential }),
+  });
+
+  if (result.token) {
+    localStorage.setItem('auth_token', result.token);
+    localStorage.setItem('user_profile', JSON.stringify(result));
+  }
+  return result;
+}
+
+export async function registerWithGoogle(formData) {
+  return request('/auth/google/register', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
 export async function getPendingUsers() {
   return request('/auth/pending-users');
 }
@@ -221,3 +224,28 @@ export function logout() {
   localStorage.removeItem('user_profile');
 }
 
+/* =========================================================================
+   9. AI CHAT ASSISTANT
+   ========================================================================= */
+
+/**
+ * POST /chat
+ * Sends a user message (with optional history) to the backend AI assistant.
+ * The backend fetches live DB data and uses Gemini to produce a grounded reply.
+ * @param {string} message  - The user's question
+ * @param {Array}  history  - Previous turns [{role:'user'|'assistant', text:'...'}]
+ * @returns {Promise<{reply: string, source: string}>}
+ */
+export async function sendChatMessage(message, history = []) {
+  return request('/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message, history }),
+  });
+}
+
+export async function registerNotificationDevice(token) {
+  return request('/notifications/devices', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
+}

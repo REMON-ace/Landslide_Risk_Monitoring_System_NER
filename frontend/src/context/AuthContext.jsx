@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as apiLogin, logout as apiLogout } from '../api/client';
+import { authenticateWithGoogle, login as apiLogin, logout as apiLogout } from '../api/client';
 
 const AuthContext = createContext();
 
@@ -85,6 +85,18 @@ export function AuthProvider({ children }) {
     }
   }, [navigate]);
 
+  const loginWithGoogle = useCallback(async (credential) => {
+    setIsLoading(true);
+    try {
+      const profile = await authenticateWithGoogle(credential);
+      setUser(profile);
+      navigate(isAdminRole(profile?.role) ? '/dashboard' : '/citizen', { replace: true });
+      return profile;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate]);
+
   const logoutUser = useCallback(() => {
     // 1. Clear all tokens and session data from localStorage
     apiLogout(); // removes auth_token + user_profile
@@ -113,6 +125,7 @@ export function AuthProvider({ children }) {
         isOfficial,
         isLoading,
         login: loginUser,
+        loginWithGoogle,
         logout: logoutUser,
       }}
     >

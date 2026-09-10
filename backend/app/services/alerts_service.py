@@ -184,6 +184,16 @@ def create_alert(db: Session, data: dict) -> dict:
     db.refresh(alert)
 
     _mock_send(channels, data["zone_id"], message, recipients_count)
+    if "push" in channels or "app" in channels:
+        from app.services.fcm_service import send_alert_notification
+        sent = send_alert_notification(
+            db,
+            title=f"{data['severity'].upper()} landslide alert",
+            body=message,
+            alert_id=alert_id,
+            severity=data["severity"],
+        )
+        logger.info("FCM sent alert=%s delivered=%d", alert_id, sent)
 
     return {"alert_id": alert_id, "status": "sent", "recipients_count": recipients_count}
 

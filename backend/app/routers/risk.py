@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.schemas import RiskZoneOut, PredictRiskIn, PredictRiskOut, RiskHistoryOut
 from app.services import risk_service
-from app.services.risk_model import predict_risk as ml_predict
+from app.services.risk_model import ModelUnavailableError, predict_risk as ml_predict
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -29,9 +30,13 @@ def predict_risk(payload: PredictRiskIn):
     Run the trained landslide risk model and return a probability score + severity label.
     """
     try:
-        result = ml_predict(payload.model_dump())
-    except (FileNotFoundError, ValueError) as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        result = ml_predict(
+            payload.model_dump(),
+            allow_empirical_fallback=settings.allow_empirical_fallback,
+            model_version=settings.model_version,
+        )
+    except ModelUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
     return result
 
 

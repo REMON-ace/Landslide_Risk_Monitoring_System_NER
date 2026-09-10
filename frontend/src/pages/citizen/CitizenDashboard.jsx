@@ -1,5 +1,5 @@
 // Citizen Dashboard — overview for verified residents
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,8 @@ import {
   Info, Clock, CheckCircle2,
 } from 'lucide-react';
 import { translateMessage } from '../../utils/translateMessage';
+import { enableLiveNotifications } from '../../services/firebaseMessaging';
+import { emergencyAudio } from '../../utils/emergencyAudio';
 
 const SEVERITY_CONFIG = {
   critical: { dot: 'bg-red-500',    badge: 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
@@ -21,6 +23,24 @@ const SEVERITY_CONFIG = {
 export default function CitizenDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [notificationStatus, setNotificationStatus] = useState('');
+  const [enablingNotifications, setEnablingNotifications] = useState(false);
+
+  const handleEnableNotifications = async () => {
+    setEnablingNotifications(true);
+    setNotificationStatus('');
+    try {
+      await emergencyAudio.unlockAudio();
+      await enableLiveNotifications((payload) => {
+        setNotificationStatus(payload.notification?.title || 'New live alert received.');
+      });
+      setNotificationStatus('Live notifications are enabled on this device.');
+    } catch (error) {
+      setNotificationStatus(error.message || 'Could not enable live notifications.');
+    } finally {
+      setEnablingNotifications(false);
+    }
+  };
 
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ['citizen_alerts'],
@@ -65,6 +85,22 @@ export default function CitizenDashboard() {
             <span className="text-[10px] font-bold opacity-80">{t('summary.subtext_alerts_count', '{{count}} Active', { count: alerts.length })}</span>
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#006B4F]/20 bg-[#EAF5F0] p-3.5 dark:bg-emerald-950/20">
+        <div>
+          <p className="text-xs font-bold text-[#006B4F] dark:text-emerald-400">Get live safety alerts</p>
+          <p className="text-[11px] text-slate-600 dark:text-zinc-400">Enable browser notifications for new landslide warnings.</p>
+          {notificationStatus && <p className="mt-1 text-[11px] font-medium text-slate-700 dark:text-zinc-300">{notificationStatus}</p>}
+        </div>
+        <button
+          type="button"
+          onClick={handleEnableNotifications}
+          disabled={enablingNotifications}
+          className="rounded-lg bg-[#006B4F] px-3 py-2 text-xs font-bold text-white hover:bg-[#00523C] disabled:opacity-60"
+        >
+          {enablingNotifications ? 'Enabling…' : 'Enable notifications'}
+        </button>
       </div>
 
       {/* Quick Stats */}
