@@ -82,6 +82,7 @@ export default function App() {
               >
                 <Route path="/citizen"         element={<CitizenDashboard />} />
                 <Route path="/citizen/map"     element={<CitizenMapPage />} />
+                <Route path="/citizen/weather" element={<WeatherSensorsPage />} />
                 <Route path="/citizen/reports" element={<CitizenReportsPage />} />
                 <Route path="/citizen/alerts"  element={<CitizenAlertsPage />} />
               </Route>

@@ -8,11 +8,13 @@ import { SUPPORTED_LANGUAGES } from '../../i18n/index';
 import {
   LayoutDashboard, Map, FileText, Bell, X, ChevronLeft, ChevronRight,
   ShieldCheck, LogOut, Sun, Moon, Wifi, WifiOff, Menu, Globe, ChevronDown,
+  CloudRain,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/citizen',         label: 'Dashboard',     icon: LayoutDashboard, end: true },
   { path: '/citizen/map',     label: 'Risk Map',      icon: Map },
+  { path: '/citizen/weather', label: 'Weather & Sensors', icon: CloudRain },
   { path: '/citizen/reports', label: 'Field Reports', icon: FileText },
   { path: '/citizen/alerts',  label: 'Alerts',        icon: Bell },
 ];
@@ -179,6 +181,7 @@ export default function CitizenLayout() {
                 <strong className="text-slate-800 dark:text-zinc-200 font-semibold capitalize">
                   {location.pathname === '/citizen' ? t('sidebar.dashboard', 'Dashboard')
                     : location.pathname === '/citizen/map' ? t('sidebar.risk_map', 'Risk Map')
+                    : location.pathname === '/citizen/weather' ? t('sidebar.weather_sensors', 'Weather & Sensors')
                     : location.pathname === '/citizen/reports' ? t('sidebar.field_reports', 'Field Reports')
                     : location.pathname === '/citizen/alerts' ? t('sidebar.alerts', 'Alerts')
                     : t('top_header.overview', 'Overview')}
