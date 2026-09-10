@@ -90,6 +90,7 @@ function CardHeader({ title, kicker, badge, action }) {
 
 /* ─── Main Dashboard Page ────────────────────────────────────────────── */
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const mapSectionRef = useRef(null);
   const { isOfficial } = useAuth();

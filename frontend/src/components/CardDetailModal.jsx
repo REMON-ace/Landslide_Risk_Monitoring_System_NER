@@ -484,6 +484,7 @@ export default function CardDetailModal({
   alerts = [],
   reports = [],
 }) {
+  const { t } = useTranslation();
   if (!isOpen || !cardId) return null;
 
   const meta = CARD_META[cardId] || CARD_META.total_zones;
