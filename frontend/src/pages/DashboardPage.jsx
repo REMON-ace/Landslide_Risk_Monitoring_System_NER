@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   getDashboardSummary,
   getRiskZones,
@@ -265,13 +266,13 @@ export default function DashboardPage() {
           <div className="space-y-1.5 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-200 border border-white/15 text-[11px] font-bold tracking-wide">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>GIS Monitoring Active • {selectedDistrict === 'all' ? 'All Meghalaya Districts' : selectedDistrict}</span>
+              <span>{t('dashboard.gis_monitoring_active', { defaultValue: 'GIS Monitoring Active' })} • {selectedDistrict === 'all' ? t('dashboard.all_districts', { defaultValue: 'All Meghalaya Districts' }) : selectedDistrict}</span>
             </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
-              Landslide Risk Monitoring
+              {t('dashboard.title', { defaultValue: 'Landslide Risk Monitoring' })}
             </h1>
             <p className="text-xs sm:text-sm text-emerald-100/90 font-medium leading-relaxed">
-              Regional Disaster Intelligence Dashboard — Monitor terrain risk, field reports, road network, directives and environmental telemetry from one unified console.
+              {t('dashboard.subtitle', { defaultValue: 'Regional Disaster Intelligence Dashboard — Monitor terrain risk, field reports, road network, directives and environmental telemetry from one unified console.' })}
             </p>
           </div>
 
@@ -284,13 +285,13 @@ export default function DashboardPage() {
                   className="px-3.5 py-2 rounded-xl bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
                 >
                   <Radio className="w-3.5 h-3.5" />
-                  <span>Issue Alert</span>
+                  <span>{t('alerts_list.trigger_btn', { defaultValue: 'Issue Alert' })}</span>
                 </button>
 
                 <button
                   onClick={() => setIsHistoryOpen(true)}
                   className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-colors"
-                  title="Alert History"
+                  title={t('emergency_alerts.alert_history', { defaultValue: 'Alert History' })}
                 >
                   <History className="w-4 h-4" />
                 </button>
@@ -318,7 +319,7 @@ export default function DashboardPage() {
           <div className="w-5 h-5 rounded-lg bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 flex items-center justify-center">
             <FileText className="w-3 h-3" />
           </div>
-          <span>+ Submit Field Report</span>
+          <span>+ {t('dashboard.submit_field_report', { defaultValue: 'Submit Field Report' })}</span>
         </button>
 
         <button
@@ -328,7 +329,7 @@ export default function DashboardPage() {
           <div className="w-5 h-5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-[#008060] dark:text-emerald-400 flex items-center justify-center">
             <Layers className="w-3 h-3" />
           </div>
-          <span>+ Open Risk Map</span>
+          <span>+ {t('dashboard.open_risk_map', { defaultValue: 'Open Risk Map' })}</span>
         </button>
 
         <button
@@ -338,7 +339,7 @@ export default function DashboardPage() {
           <div className="w-5 h-5 rounded-lg bg-red-50 dark:bg-red-950/40 text-[#E63946] flex items-center justify-center">
             <Bell className="w-3 h-3" />
           </div>
-          <span>+ View Alerts</span>
+          <span>+ {t('dashboard.view_alerts', { defaultValue: 'View Alerts' })}</span>
         </button>
 
         {isOfficial && (
@@ -349,7 +350,7 @@ export default function DashboardPage() {
             <div className="w-5 h-5 rounded-lg bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 flex items-center justify-center">
               <Cpu className="w-3 h-3" />
             </div>
-            <span>+ Risk Predictor</span>
+            <span>+ {t('sidebar.risk_predictor', { defaultValue: 'Risk Predictor' })}</span>
           </button>
         )}
 
@@ -360,18 +361,18 @@ export default function DashboardPage() {
           <div className="w-5 h-5 rounded-lg bg-[#006B4F] text-white flex items-center justify-center">
             <MapPin className="w-3 h-3" />
           </div>
-          <span>+ Monitored Situation</span>
+          <span>+ {t('dashboard.monitored_situation', { defaultValue: 'Monitored Situation' })}</span>
         </button>
 
         {/* District Filter Selector */}
         <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] text-xs font-semibold shrink-0">
-          <span className="text-slate-500 dark:text-zinc-400">District:</span>
+          <span className="text-slate-500 dark:text-zinc-400">{t('alerts_page.district_label', { defaultValue: 'District:' })}</span>
           <select
             value={selectedDistrict}
             onChange={(e) => setSelectedDistrict(e.target.value)}
             className="bg-transparent text-[#006B4F] dark:text-emerald-400 font-bold focus:outline-none cursor-pointer"
           >
-            <option value="all">All Districts ({districtList.length})</option>
+            <option value="all">{t('alerts_page.all_districts', { count: districtList.length, defaultValue: `All Districts (${districtList.length})` })}</option>
             {districtList.map((dist) => (
               <option key={dist} value={dist}>
                 {dist}
@@ -397,15 +398,15 @@ export default function DashboardPage() {
         <div className="lg:col-span-7">
           <Card>
             <CardHeader
-              kicker="Terrain Vulnerability"
-              title="Risk Distribution Analysis"
-              badge={`${zones.length} Monitored Zones`}
+              kicker={t('dashboard.terrain_vulnerability', 'Terrain Vulnerability')}
+              title={t('dashboard.risk_distribution_analysis', 'Risk Distribution Analysis')}
+              badge={`${zones.length} ${t('dashboard.monitored_zones_count', 'Monitored Zones')}`}
             />
             <div className="p-5 space-y-4">
               {zones.length === 0 ? (
                 <div className="h-52 flex items-center justify-center text-xs text-slate-400">
                   <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                  Loading terrain zones…
+                  {t('dashboard.loading_terrain_zones', 'Loading terrain zones…')}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
@@ -442,7 +443,7 @@ export default function DashboardPage() {
                         {zones.length}
                       </span>
                       <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5">
-                        Zones
+                        {t('dashboard.zones_count_label', 'Zones')}
                       </span>
                     </div>
                   </div>
@@ -509,14 +510,14 @@ export default function DashboardPage() {
           <Card className="h-full flex flex-col justify-between">
             <div>
               <CardHeader
-                kicker="Operational Feed"
-                title="Recent Directives & Activity"
+                kicker={t('dashboard.operational_feed', 'Operational Feed')}
+                title={t('dashboard.recent_directives_activity', 'Recent Directives & Activity')}
                 action={
                   <Link
                     to="/alerts"
                     className="text-xs font-bold text-[#006B4F] dark:text-emerald-400 hover:underline flex items-center gap-0.5"
                   >
-                    All alerts <ChevronRight className="w-3.5 h-3.5" />
+                    {t('dashboard.all_alerts_link', 'All alerts')} <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 }
               />
@@ -524,7 +525,7 @@ export default function DashboardPage() {
               <div className="divide-y divide-[#D9E2DE] dark:divide-[#1E1E24]">
                 {activityTimeline.length === 0 ? (
                   <p className="p-8 text-center text-xs text-slate-400">
-                    No recent directives or field reports logged.
+                    {t('dashboard.no_recent_directives', 'No recent directives or field reports logged.')}
                   </p>
                 ) : (
                   activityTimeline.map((item) => {
@@ -564,7 +565,7 @@ export default function DashboardPage() {
                 onClick={() => setIsReportModalOpen(true)}
                 className="text-xs font-bold text-[#006B4F] dark:text-emerald-400 hover:underline"
               >
-                + Log Ground Incident Verification
+                + {t('dashboard.log_ground_incident', 'Log Ground Incident Verification')}
               </button>
             </div>
           </Card>
@@ -575,15 +576,15 @@ export default function DashboardPage() {
       <div ref={mapSectionRef} id="map-section">
         <Card>
           <CardHeader
-            kicker="Geospatial Terrain Intelligence"
-            title="East Khasi Hills — GIS Hazard Map"
-            badge="Interactive"
+            kicker={t('dashboard.geospatial_intelligence', 'Geospatial Terrain Intelligence')}
+            title={t('dashboard.gis_hazard_map_title', 'East Khasi Hills — GIS Hazard Map')}
+            badge={t('dashboard.interactive', 'Interactive')}
             action={
               <Link
                 to="/map"
                 className="text-xs font-bold text-[#006B4F] dark:text-emerald-400 hover:underline flex items-center gap-1"
               >
-                Open Full Screen Map <ArrowUpRight className="w-3.5 h-3.5" />
+                {t('dashboard.open_fullscreen_map', 'Open Full Screen Map')} <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             }
           />
@@ -615,28 +616,28 @@ export default function DashboardPage() {
             <div className="p-3.5 border-t border-[#D9E2DE] dark:border-[#1E1E24] bg-[#F8FAF9] dark:bg-[#121417] flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-4">
                 <span className="font-bold text-slate-700 dark:text-zinc-300 text-[11px] uppercase tracking-wider">
-                  Hazard Legend:
+                  {t('dashboard.hazard_legend', 'Hazard Legend:')}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#008060]" />
-                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">Low</span>
+                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">{t('severity.low_short', 'Low')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />
-                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">Medium</span>
+                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">{t('severity.medium_short', 'Medium')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C]" />
-                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">High</span>
+                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">{t('severity.high_short', 'High')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#E63946]" />
-                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">Critical</span>
+                  <span className="text-[11px] text-slate-600 dark:text-zinc-400">{t('severity.critical_short', 'Critical')}</span>
                 </div>
               </div>
 
               <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                Click any zone marker to view telemetry & trigger directives
+                {t('dashboard.map_instruction', 'Click any zone marker to view telemetry & trigger directives')}
               </div>
             </div>
           </div>
@@ -647,30 +648,30 @@ export default function DashboardPage() {
       <div id="priority-zones">
         <Card>
           <CardHeader
-            kicker="Surveillance Focus"
-            title="High Priority Terrain Sectors"
-            badge={`${priorityZones.length} Zones`}
+            kicker={t('dashboard.surveillance_focus', 'Surveillance Focus')}
+            title={t('dashboard.high_priority_sectors', 'High Priority Terrain Sectors')}
+            badge={`${priorityZones.length} ${t('dashboard.zones_count_label', 'Zones')}`}
             action={
               <Link
                 to="/map"
                 className="text-xs font-bold text-[#006B4F] dark:text-emerald-400 hover:underline flex items-center gap-0.5"
               >
-                Inspect All on Map <ArrowUpRight className="w-3.5 h-3.5" />
+                {t('dashboard.inspect_all_on_map', 'Inspect All on Map')} <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             }
           />
           {priorityZones.length === 0 ? (
-            <p className="p-8 text-center text-xs text-slate-400">No risk zones loaded from GIS backend.</p>
+            <p className="p-8 text-center text-xs text-slate-400">{t('dashboard.no_risk_zones_loaded', 'No risk zones loaded from GIS backend.')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-[#006B4F] text-white">
-                    <th className="px-4 py-3 text-left font-bold">Zone ID</th>
-                    <th className="px-4 py-3 text-left font-bold">Village / Sector</th>
-                    <th className="px-4 py-3 text-left font-bold">Risk Level</th>
-                    <th className="px-4 py-3 text-left font-bold hidden md:table-cell">Score</th>
-                    <th className="px-4 py-3 text-right font-bold">Action</th>
+                    <th className="px-4 py-3 text-left font-bold">{t('dashboard.th_zone_id', 'Zone ID')}</th>
+                    <th className="px-4 py-3 text-left font-bold">{t('dashboard.th_village_sector', 'Village / Sector')}</th>
+                    <th className="px-4 py-3 text-left font-bold">{t('dashboard.th_risk_level', 'Risk Level')}</th>
+                    <th className="px-4 py-3 text-left font-bold hidden md:table-cell">{t('dashboard.th_score', 'Score')}</th>
+                    <th className="px-4 py-3 text-right font-bold">{t('dashboard.th_action', 'Action')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#D9E2DE] dark:divide-[#1E1E24]">
@@ -722,7 +723,7 @@ export default function DashboardPage() {
                             className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 hover:bg-[#006B4F] hover:text-white font-bold transition-colors text-[11px]"
                           >
                             <MapPin className="w-3 h-3" />
-                            <span>View on Map</span>
+                            <span>{t('dashboard.view_on_map', 'View on Map')}</span>
                           </button>
                         </td>
                       </tr>
@@ -741,12 +742,12 @@ export default function DashboardPage() {
         <div id="roads-section">
           <Card>
             <CardHeader
-              kicker="Transport Logistics"
-              title="Regional Road Corridors"
-              badge={`${roads.length} Corridors`}
+              kicker={t('dashboard.transport_logistics', 'Transport Logistics')}
+              title={t('dashboard.regional_road_corridors', 'Regional Road Corridors')}
+              badge={`${roads.length} ${t('dashboard.corridors_count', 'Corridors')}`}
             />
             {roads.length === 0 ? (
-              <p className="p-8 text-center text-xs text-slate-400">No road segments loaded.</p>
+              <p className="p-8 text-center text-xs text-slate-400">{t('dashboard.no_roads_loaded', 'No road segments loaded.')}</p>
             ) : (
               <div className="divide-y divide-[#D9E2DE] dark:divide-[#1E1E24] max-h-96 overflow-y-auto">
                 {roads.map((r) => (
@@ -776,7 +777,7 @@ export default function DashboardPage() {
                           onClick={() => handleUpdateRoadStatus(r.road_id, 'clear')}
                           className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-[#008060] dark:text-emerald-400 border border-emerald-200/60 hover:bg-emerald-100 transition-colors"
                         >
-                          Mark Clear
+                          {t('roads.mark_clear', 'Mark Clear')}
                         </button>
                       )}
                       {r.status !== 'blocked' && (
@@ -784,7 +785,7 @@ export default function DashboardPage() {
                           onClick={() => handleUpdateRoadStatus(r.road_id, 'blocked')}
                           className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-red-50 dark:bg-red-950/40 text-[#E63946] dark:text-red-400 border border-red-200/60 hover:bg-red-100 transition-colors"
                         >
-                          Mark Blocked
+                          {t('roads.mark_blocked', 'Mark Blocked')}
                         </button>
                       )}
                     </div>
@@ -799,37 +800,37 @@ export default function DashboardPage() {
         <div id="weather-sensors">
           <Card>
             <CardHeader
-              kicker="Environmental Telemetry"
-              title="Hydrological & Soil Conditions"
-              badge="Active"
+              kicker={t('dashboard.environmental_telemetry', 'Environmental Telemetry')}
+              title={t('dashboard.hydrological_soil_conditions', 'Hydrological & Soil Conditions')}
+              badge={t('dashboard.badge_active', 'Active')}
             />
             <div className="p-5 space-y-4">
               {/* 4 Sensor tiles with meaningful visual accents */}
               <div className="grid grid-cols-2 gap-3">
                 {[
                   {
-                    label: '24h Rainfall',
+                    label: t('sensors.rainfall_24h', '24h Rainfall'),
                     icon: CloudRain,
                     value: weather?.rainfall_24h ?? '65.2',
                     unit: 'mm',
                     iconBg: 'bg-sky-50 dark:bg-sky-950/40 text-sky-600',
                   },
                   {
-                    label: '72h Cumulative',
+                    label: t('sensors.rainfall_72h', '72h Cumulative'),
                     icon: Droplets,
                     value: weather?.rainfall_72h ?? '210.0',
                     unit: 'mm',
                     iconBg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-600',
                   },
                   {
-                    label: 'Peak Intensity',
+                    label: t('sensors.peak_intensity', 'Peak Intensity'),
                     icon: Thermometer,
                     value: weather?.rainfall_intensity_peak ?? '28.4',
                     unit: 'mm/h',
                     iconBg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600',
                   },
                   {
-                    label: 'Antecedent Index (ARI)',
+                    label: t('sensors.ari', 'Antecedent Index (ARI)'),
                     icon: Wind,
                     value: weather?.antecedent_rainfall_index ?? '145.7',
                     unit: '',
@@ -859,9 +860,9 @@ export default function DashboardPage() {
               {soilSensors.length > 0 && (
                 <div className="space-y-2 pt-3 border-t border-[#D9E2DE] dark:border-[#1E1E24]">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-zinc-200">
-                    <span>Soil Moisture IoT Sensors</span>
+                    <span>{t('sensors.soil_moisture_title', 'Soil Moisture IoT Sensors')}</span>
                     <span className="text-[10px] text-slate-400 font-normal">
-                      {soilSensors.length} active probes
+                      {soilSensors.length} {t('sensors.active_probes', 'active probes')}
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -877,7 +878,7 @@ export default function DashboardPage() {
                             <p className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                               {s.sensor_id}
                             </p>
-                            <p className="text-[10px] text-slate-400">Zone {s.zone_id}</p>
+                            <p className="text-[10px] text-slate-400">{t('sidebar.villages', 'Zone')} {s.zone_id}</p>
                           </div>
                           <div className="text-right">
                             <span
@@ -887,7 +888,7 @@ export default function DashboardPage() {
                             >
                               {pct}%
                             </span>
-                            <p className="text-[9px] text-slate-400">{high ? 'Near sat.' : 'Nominal'}</p>
+                            <p className="text-[9px] text-slate-400">{high ? t('sensors.near_saturation', 'Near sat.') : t('sensors.nominal', 'Nominal')}</p>
                           </div>
                         </div>
                       );

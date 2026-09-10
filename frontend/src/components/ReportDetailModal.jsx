@@ -83,13 +83,13 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
             </div>
             <div>
               <h2 className="font-extrabold text-base text-[#1F2937] dark:text-white flex items-center gap-2">
-                <span>Field Report</span>
+                <span>{t('sidebar.field_reports', { defaultValue: 'Field Report' })}</span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
                   {reportId}
                 </span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                Complete report details and submitted information
+                {t('report_modal.subtitle', { defaultValue: 'Complete report details and submitted information' })}
               </p>
             </div>
           </div>
@@ -109,11 +109,11 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
           <div className="flex items-center gap-3 flex-wrap">
             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${statusCfg.cls}`}>
               <StatusIcon className="w-3.5 h-3.5" />
-              <span>{statusCfg.label}</span>
+              <span>{t(`reports_feed.status_${status}`, { defaultValue: statusCfg.label })}</span>
             </div>
             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-black uppercase tracking-wide ${severityBadge[severity]}`}>
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>{severity} Severity</span>
+              <span>{t(`severity.${severity}_short`, { defaultValue: severity })} {t('report_modal.severity_suffix', { defaultValue: 'Severity' })}</span>
             </div>
           </div>
 
@@ -123,7 +123,7 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
               <div className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 dark:bg-zinc-900/60 border-b border-[#D9E2DE] dark:border-zinc-800">
                 <Camera className="w-3.5 h-3.5 text-slate-400" />
                 <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Evidence Photo
+                  {t('alert_modal.field_photo', { defaultValue: 'Evidence Photo' })}
                 </span>
               </div>
               <img
@@ -137,17 +137,17 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
 
           {/* Report Type */}
           <div className="p-4 rounded-xl border border-[#D9E2DE] dark:border-zinc-800 bg-[#F5F7F6]/50 dark:bg-zinc-900/50 space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Report Type</span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{t('report_modal.report_type', { defaultValue: 'Report Type' })}</span>
             <p className="text-sm font-bold text-[#1F2937] dark:text-white">
-              Landslide / Slope Hazard Observation
+              {t('report_modal.landslide_observation', { defaultValue: 'Landslide / Slope Hazard Observation' })}
             </p>
           </div>
 
           {/* Full Description */}
           <div className="p-4 rounded-xl border border-[#D9E2DE] dark:border-zinc-800 bg-white dark:bg-zinc-900/50 space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Full Description</span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{t('report_modal.full_description', { defaultValue: 'Full Description' })}</span>
             <p className="text-sm text-[#1F2937] dark:text-zinc-200 leading-relaxed">
-              {report.description || 'No description provided'}
+              {report.description || t('report_modal.no_description', { defaultValue: 'No description provided' })}
             </p>
           </div>
 
@@ -157,7 +157,7 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
             <div className="p-3.5 rounded-xl border border-[#D9E2DE] dark:border-zinc-800 bg-white dark:bg-zinc-900/50">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <MapPin className="w-3.5 h-3.5 text-[#006B4F] dark:text-emerald-400" />
-                <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">GPS Coordinates</span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{t('common.coordinates', { defaultValue: 'GPS Coordinates' })}</span>
               </div>
               <p className="font-mono text-sm font-bold text-[#1F2937] dark:text-white">
                 {report.lat != null ? Number(report.lat).toFixed(4) : '—'}, {report.lng != null ? Number(report.lng).toFixed(4) : '—'}
@@ -171,7 +171,7 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
             <div className="p-3.5 rounded-xl border border-[#D9E2DE] dark:border-zinc-800 bg-white dark:bg-zinc-900/50">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#006B4F] dark:text-emerald-400" />
-                <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Submission Time</span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{t('report_modal.submission_time', { defaultValue: 'Submission Time' })}</span>
               </div>
               <p className="text-sm font-bold text-[#1F2937] dark:text-white">
                 {fmtDate(report.timestamp)}
@@ -186,13 +186,13 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
                 ) : (
                   <User className="w-3.5 h-3.5 text-[#006B4F] dark:text-emerald-400" />
                 )}
-                <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Reporter / Source</span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">{t('reports_feed.reporter_label', { defaultValue: 'Reporter / Source' })}</span>
               </div>
               <p className="text-sm font-bold text-[#1F2937] dark:text-white capitalize">
-                {report.reporter_type || 'Citizen'}
+                {report.reporter_type ? t(`report_form.${report.reporter_type}`, { defaultValue: report.reporter_type }) : t('report_form.citizen', { defaultValue: 'Citizen' })}
               </p>
               <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">
-                {report.reporter_type === 'official' ? 'Government Official / Field Officer' : 'Community Member / Citizen Reporter'}
+                {report.reporter_type === 'official' ? t('report_form.official', { defaultValue: 'Government Official / Field Officer' }) : t('report_form.citizen', { defaultValue: 'Community Member / Citizen Reporter' })}
               </p>
             </div>
 
@@ -216,26 +216,26 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
           {/* Additional Field Data (language, sync status, etc.) */}
           <div className="p-4 rounded-xl border border-[#D9E2DE] dark:border-zinc-800 bg-[#F5F7F6]/50 dark:bg-zinc-900/50">
             <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block mb-2.5">
-              Additional Field Data
+              {t('report_modal.additional_data', { defaultValue: 'Additional Field Data' })}
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div>
-                <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Language</span>
+                <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">{t('alerts_list.lang_label', { defaultValue: 'Language' })}</span>
                 <div className="flex items-center gap-1">
                   <Globe className="w-3 h-3 text-slate-400" />
                   <span className="font-semibold text-[#1F2937] dark:text-zinc-200 uppercase">{report.language || 'EN'}</span>
                 </div>
               </div>
               <div>
-                <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Sync Status</span>
+                <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">{t('report_modal.sync_status', { defaultValue: 'Sync Status' })}</span>
                 <span className={`font-semibold ${report.is_pending ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                  {report.is_pending ? 'Pending Sync' : 'Synced'}
+                  {report.is_pending ? t('report_form.pending_sync_label', { defaultValue: 'Pending Sync' }) : t('report_modal.synced', { defaultValue: 'Synced' })}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">Has Attachment</span>
+                <span className="text-slate-400 dark:text-zinc-500 block mb-0.5">{t('report_modal.has_attachment', { defaultValue: 'Has Attachment' })}</span>
                 <span className="font-semibold text-[#1F2937] dark:text-zinc-200">
-                  {(report.photo_url || report.photo_data) ? 'Yes — Photo' : 'No'}
+                  {(report.photo_url || report.photo_data) ? t('report_modal.yes_photo', { defaultValue: 'Yes — Photo' }) : t('report_modal.no', { defaultValue: 'No' })}
                 </span>
               </div>
             </div>
@@ -246,7 +246,7 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
         <div className="px-5 py-3 border-t border-[#D9E2DE] dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/60">
           <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-mono flex items-center gap-1.5">
             <Eye className="w-3.5 h-3.5" />
-            <span>Read-only view</span>
+            <span>{t('report_modal.readonly_view', { defaultValue: 'Read-only view' })}</span>
           </div>
           <button
             type="button"
@@ -254,7 +254,7 @@ export default function ReportDetailModal({ isOpen, onClose, report }) {
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-[#D9E2DE] dark:border-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Reports
+            {t('common.back', { defaultValue: 'Back' })}
           </button>
         </div>
       </div>

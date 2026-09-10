@@ -1,6 +1,7 @@
 // Citizen Field Reports — submit hazard observations + view submission history
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { submitFieldReport, getFieldReports } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -9,6 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function CitizenReportsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -71,10 +73,10 @@ export default function CitizenReportsPage() {
       <div>
         <div className="flex items-center gap-2 mb-0.5">
           <FileText className="w-5 h-5 text-[#006B4F]" />
-          <h1 className="text-base font-black text-slate-900 dark:text-white">Field Reports</h1>
+          <h1 className="text-base font-black text-slate-900 dark:text-white">{t('sidebar.field_reports', { defaultValue: 'Field Reports' })}</h1>
         </div>
         <p className="text-xs text-slate-500 dark:text-zinc-400">
-          Report a landslide hazard or ground movement. Your reports help the district operations centre respond faster.
+          {t('report_form.subtitle', { defaultValue: 'Report a landslide hazard or ground movement. Your reports help the district operations centre respond faster.' })}
         </p>
       </div>
 
@@ -86,7 +88,7 @@ export default function CitizenReportsPage() {
         >
           <div className="flex items-center gap-2">
             <Send className="w-4 h-4 text-[#006B4F]" />
-            <span className="text-xs font-black text-slate-800 dark:text-zinc-100">Submit New Observation</span>
+            <span className="text-xs font-black text-slate-800 dark:text-zinc-100">{t('report_form.title', { defaultValue: 'Submit New Observation' })}</span>
           </div>
           {formOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
         </button>
@@ -97,7 +99,7 @@ export default function CitizenReportsPage() {
             {success && (
               <div className="flex items-center gap-2 p-3 mb-4 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/40 text-xs text-green-700 dark:text-green-400">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span className="font-semibold">Report submitted! The operations centre will review it shortly.</span>
+                <span className="font-semibold">{t('report_form.success_msg', { defaultValue: 'Report submitted! The operations centre will review it shortly.' })}</span>
               </div>
             )}
             {/* Error banner */}
@@ -112,33 +114,33 @@ export default function CitizenReportsPage() {
               {/* Coordinates */}
               <div className="space-y-1.5">
                 <label className="block font-semibold text-slate-700 dark:text-zinc-300">
-                  Location Coordinates <span className="text-[#E63946]">*</span>
+                  {t('report_form.location', { defaultValue: 'Location Coordinates' })} <span className="text-[#E63946]">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="number" step="any" value={lat} onChange={e => setLat(e.target.value)}
-                    placeholder="Latitude"
+                    placeholder={t('report_form.lat_label', { defaultValue: 'Latitude' })}
                     className="flex-1 px-3 py-2.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] transition-all"
                   />
                   <input
                     type="number" step="any" value={lng} onChange={e => setLng(e.target.value)}
-                    placeholder="Longitude"
+                    placeholder={t('report_form.lng_label', { defaultValue: 'Longitude' })}
                     className="flex-1 px-3 py-2.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] transition-all"
                   />
                 </div>
                 <button type="button" onClick={locateMe}
                   className="flex items-center gap-1.5 text-[11px] font-semibold text-[#006B4F] dark:text-emerald-400 hover:underline cursor-pointer"
                 >
-                  <MapPin className="w-3 h-3" /> Use my current location
+                  <MapPin className="w-3 h-3" /> {t('report_form.detect_location', { defaultValue: 'Use my current location' })}
                 </button>
               </div>
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="block font-semibold text-slate-700 dark:text-zinc-300">Observation Details</label>
+                <label className="block font-semibold text-slate-700 dark:text-zinc-300">{t('report_form.description', { defaultValue: 'Observation Details' })}</label>
                 <textarea
                   rows={4} value={desc} onChange={e => setDesc(e.target.value)}
-                  placeholder="Describe what you observed: slope cracks, soil movement, blocked roads, fallen trees, unusual water flow..."
+                  placeholder={t('report_form.description_placeholder', { defaultValue: 'Describe what you observed: slope cracks, soil movement, blocked roads, fallen trees, unusual water flow...' })}
                   className="w-full px-3 py-2.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] resize-none transition-all"
                 />
               </div>
@@ -148,21 +150,21 @@ export default function CitizenReportsPage() {
                 className="w-full py-2.5 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white font-black text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-all cursor-pointer shadow-sm"
               >
                 <Send className="w-3.5 h-3.5" />
-                {submitting ? 'Submitting...' : 'Submit Observation Report'}
+                {submitting ? t('report_form.submitting', { defaultValue: 'Submitting...' }) : t('report_form.submit', { defaultValue: 'Submit Observation Report' })}
               </button>
             </form>
           </div>
         )}
       </div>
 
-      {/* Reports History */}
+      {/* Reports History Feed */}
       <div className="bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl overflow-hidden shadow-xs">
         <div className="px-4 py-3.5 border-b border-[#D9E2DE] dark:border-[#27272A] bg-[#F8FAF9] dark:bg-[#121215]">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-[#006B4F]" />
-            <h2 className="text-xs font-black text-slate-800 dark:text-zinc-100">Recent Community Reports</h2>
+            <h2 className="text-xs font-black text-slate-800 dark:text-zinc-100">{t('reports_feed.title', { defaultValue: 'Recent Community Reports' })}</h2>
           </div>
-          <p className="text-[10px] text-slate-500 mt-0.5">Citizen-submitted observations from your district</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">{t('reports_feed.subtitle', { defaultValue: 'Citizen-submitted observations from your district' })}</p>
         </div>
 
         {isLoading ? (
@@ -172,7 +174,7 @@ export default function CitizenReportsPage() {
         ) : reports.length === 0 ? (
           <div className="flex flex-col items-center py-10 gap-2">
             <FileText className="w-8 h-8 text-slate-300 dark:text-zinc-600" />
-            <p className="text-xs text-slate-500">No reports yet. Be the first to report a hazard!</p>
+            <p className="text-xs text-slate-500">{t('reports_feed.empty', { defaultValue: 'No reports yet. Be the first to report a hazard!' })}</p>
           </div>
         ) : (
           <div className="divide-y divide-[#D9E2DE]/60 dark:divide-[#27272A]/60">
@@ -183,11 +185,11 @@ export default function CitizenReportsPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-mono text-[10px] text-slate-400">{report.report_id}</span>
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border capitalize ${STATUS_STYLE[report.status] || STATUS_STYLE.received}`}>
-                        {report.status}
+                        {t(`reports_feed.status_${report.status}`, { defaultValue: report.status })}
                       </span>
                     </div>
                     <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed line-clamp-2">
-                      {report.description || 'No description provided.'}
+                      {report.description || t('report_modal.no_description', { defaultValue: 'No description provided.' })}
                     </p>
                     <div className="flex items-center gap-3 mt-1.5 text-[10px] text-slate-400">
                       <span className="flex items-center gap-1">

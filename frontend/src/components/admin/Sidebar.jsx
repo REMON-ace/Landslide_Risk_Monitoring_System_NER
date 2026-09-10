@@ -51,30 +51,30 @@ export default function Sidebar({
 
   const rawNavSections = [
     {
-      heading: 'Navigation',
+      heading: t('sidebar.navigation', 'Navigation'),
       items: [
-        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/map', label: 'Risk Map', icon: Map },
-        { path: '/predict', label: 'Risk Predictor', icon: Cpu, isPredictor: true },
-        { path: '/report', label: 'Field Reports', icon: FileText, badge: pendingReportCount > 0 ? pendingReportCount : null },
-        { path: '/alerts', label: 'Alerts', icon: Bell, badge: activeAlertCount > 0 ? activeAlertCount : null },
+        { path: '/dashboard', label: t('sidebar.dashboard', 'Dashboard'), icon: LayoutDashboard },
+        { path: '/map', label: t('sidebar.risk_map', 'Risk Map'), icon: Map },
+        { path: '/predict', label: t('sidebar.risk_predictor', 'Risk Predictor'), icon: Cpu, isPredictor: true },
+        { path: '/report', label: t('sidebar.field_reports', 'Field Reports'), icon: FileText, badge: pendingReportCount > 0 ? pendingReportCount : null },
+        { path: '/alerts', label: t('sidebar.alerts', 'Alerts'), icon: Bell, badge: activeAlertCount > 0 ? activeAlertCount : null },
       ],
     },
     {
-      heading: 'Infrastructure & Sensors',
+      heading: t('sidebar.infra_sensors', 'Infrastructure & Sensors'),
       items: [
-        { path: '/dashboard', hash: '#roads-section', label: 'Roads', icon: Route },
-        { path: '/dashboard', hash: '#priority-zones', label: 'Villages', icon: Home },
-        { path: '/dashboard', hash: '#weather-sensors', label: 'Weather & Sensors', icon: CloudRain },
+        { path: '/dashboard', hash: '#roads-section', label: t('sidebar.roads', 'Roads'), icon: Route },
+        { path: '/dashboard', hash: '#priority-zones', label: t('sidebar.villages', 'Villages'), icon: Home },
+        { path: '/dashboard', hash: '#weather-sensors', label: t('sidebar.weather_sensors', 'Weather & Sensors'), icon: CloudRain },
       ],
     },
     {
-      heading: 'Admin / Management',
+      heading: t('sidebar.admin_mgmt', 'Admin / Management'),
       isAdminOnly: true,
       items: [
-        { path: '/report', label: 'Reports Management', icon: ShieldCheck },
-        { path: '/alerts', label: 'Alert Management', icon: Radio },
-        { path: '/dashboard', hash: '#risk-distribution', label: 'System Overview', icon: Activity },
+        { path: '/report', label: t('sidebar.reports_mgmt', 'Reports Management'), icon: ShieldCheck },
+        { path: '/alerts', label: t('sidebar.alerts_mgmt', 'Alert Management'), icon: Radio },
+        { path: '/dashboard', hash: '#risk-distribution', label: t('sidebar.system_overview', 'System Overview'), icon: Activity },
       ],
     },
   ];
@@ -116,10 +116,10 @@ export default function Sidebar({
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="font-extrabold text-xs tracking-tight text-[#006B4F] dark:text-emerald-400 truncate">
-                  Landslide Risk Monitoring
+                  {t('sidebar.landslide_risk_monitoring', 'Landslide Risk Monitoring')}
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium truncate">
-                  Disaster Ops Center
+                  {t('sidebar.disaster_ops_center', 'Disaster Ops Center')}
                 </span>
               </div>
             )}
@@ -194,7 +194,7 @@ export default function Sidebar({
             <>
               <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400">
                 <span className="w-2 h-2 rounded-full bg-[#006B4F] animate-pulse" />
-                <span className="font-semibold">GIS Live Node</span>
+                <span className="font-semibold">{t('sidebar.gis_live_node', 'GIS Live Node')}</span>
               </div>
               {onToggleCollapse && (
                 <button

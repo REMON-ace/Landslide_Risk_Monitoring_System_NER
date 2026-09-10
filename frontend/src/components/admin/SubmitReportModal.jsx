@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, FileText } from 'lucide-react';
 import ReportForm from '../ReportForm';
 
@@ -7,6 +8,7 @@ import ReportForm from '../ReportForm';
  * Allows direct field report submissions from Quick Actions or the AI Assistant
  */
 export default function SubmitReportModal({ isOpen, onClose, onReportSubmitted }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -20,10 +22,10 @@ export default function SubmitReportModal({ isOpen, onClose, onReportSubmitted }
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                Submit Ground Hazard Incident Report
+                {t('report_form.title', { defaultValue: 'Submit Ground Hazard Incident Report' })}
               </h2>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                Log slope cracks, debris falls, or retaining wall displacements
+                {t('report_form.subtitle', { defaultValue: 'Log slope cracks, debris falls, or retaining wall displacements' })}
               </p>
             </div>
           </div>

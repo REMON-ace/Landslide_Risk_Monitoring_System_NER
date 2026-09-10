@@ -76,17 +76,17 @@ export default function TopHeader({
   const getBreadcrumb = () => {
     switch (location.pathname) {
       case '/':
-        return { section: 'Command Center', current: 'Dashboard' };
+        return { section: t('top_header.command_center', 'Command Center'), current: t('sidebar.dashboard', 'Dashboard') };
       case '/map':
-        return { section: 'Command Center', current: 'Risk Map' };
+        return { section: t('top_header.command_center', 'Command Center'), current: t('sidebar.risk_map', 'Risk Map') };
       case '/predict':
-        return { section: 'Decision Support', current: 'Risk Predictor' };
+        return { section: t('top_header.decision_support', 'Decision Support'), current: t('sidebar.risk_predictor', 'Risk Predictor') };
       case '/report':
-        return { section: 'Field Operations', current: 'Field Reports' };
+        return { section: t('top_header.field_operations', 'Field Operations'), current: t('sidebar.field_reports', 'Field Reports') };
       case '/alerts':
-        return { section: 'Public Directives', current: 'Emergency Alerts' };
+        return { section: t('top_header.public_directives', 'Public Directives'), current: t('top_header.emergency_alerts', 'Emergency Alerts') };
       default:
-        return { section: 'Command Center', current: 'Overview' };
+        return { section: t('top_header.command_center', 'Command Center'), current: t('top_header.overview', 'Overview') };
     }
   };
 
@@ -136,7 +136,7 @@ export default function TopHeader({
               setIsSearchOpen(true);
             }}
             onFocus={() => setIsSearchOpen(true)}
-            placeholder="Search zones, villages, IDs..."
+            placeholder={t('top_header.search_placeholder', 'Search zones, villages, IDs...')}
             className="w-full pl-9 pr-4 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F] transition-all"
           />
         </div>
@@ -146,13 +146,13 @@ export default function TopHeader({
           <div className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl shadow-xl overflow-hidden z-50">
             <div className="p-2 border-b border-[#D9E2DE] dark:border-[#1E1E24] bg-[#F5F7F6]/50 dark:bg-[#121215]">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                Monitored Zones ({searchResults.length})
+                {t('top_header.monitored_zones', 'Monitored Zones')} ({searchResults.length})
               </span>
             </div>
 
             {searchResults.length === 0 ? (
               <div className="p-4 text-center text-xs text-slate-400 dark:text-zinc-500">
-                No matching zones found
+                {t('top_header.no_matching_zones', 'No matching zones found')}
               </div>
             ) : (
               <div className="max-h-60 overflow-y-auto divide-y divide-[#D9E2DE]/50 dark:divide-[#27272A]/50">
@@ -190,10 +190,10 @@ export default function TopHeader({
         {/* Backend Connectivity Status */}
         <div
           className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#EAF5F0] dark:bg-emerald-950/30 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/20"
-          title="Connected to GIS Database"
+          title={t('top_header.gis_db_connected', 'Connected to GIS Database')}
         >
           <Database className="w-3.5 h-3.5" />
-          <span>Connected to GIS Database</span>
+          <span>{t('top_header.gis_db_connected', 'Connected to GIS Database')}</span>
         </div>
 
         {/* Verify Residents Button (Admin only) */}
@@ -201,10 +201,10 @@ export default function TopHeader({
           <button
             onClick={onOpenVerification}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#EAF5F0] text-[#006B4F] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#006B4F]/30 hover:bg-[#d5ebe0] transition-all cursor-pointer shadow-2xs"
-            title="Review pending resident registration applications & residency proof"
+            title={t('top_header.verify_residents_title', 'Review pending resident registration applications & residency proof')}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Verify Residents</span>
+            <span className="hidden sm:inline">{t('top_header.verify_residents', 'Verify Residents')}</span>
           </button>
         )}
 
@@ -218,7 +218,7 @@ export default function TopHeader({
           title={isOnline ? 'Network telemetry online' : 'Offline mode active'}
         >
           {isOnline ? <Wifi className="w-3.5 h-3.5 text-[#006B4F]" /> : <WifiOff className="w-3.5 h-3.5 text-[#E63946]" />}
-          <span className="hidden lg:inline">{isOnline ? 'Online' : 'Offline'}</span>
+          <span className="hidden lg:inline">{isOnline ? t('nav.online', 'Online') : t('nav.offline', 'Offline')}</span>
         </div>
 
         {/* Language Selector */}
@@ -240,7 +240,7 @@ export default function TopHeader({
             <div className="absolute right-0 top-full mt-1.5 w-60 bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl shadow-xl overflow-hidden z-50">
               <div className="p-2.5 bg-[#F5F7F6] dark:bg-[#121215] border-b border-[#D9E2DE] dark:border-[#1E1E24]">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#006B4F] dark:text-emerald-400">
-                  Regional Languages
+                  {t('top_header.regional_languages', 'Regional Languages')}
                 </p>
               </div>
               <div className="max-h-60 overflow-y-auto py-1">
@@ -304,15 +304,15 @@ export default function TopHeader({
             <div className="absolute right-0 top-full mt-1.5 w-80 sm:w-96 bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] rounded-xl shadow-xl overflow-hidden z-50">
               <div className="flex items-center justify-between p-3.5 border-b border-[#D9E2DE] dark:border-[#1E1E24] bg-[#F5F7F6]/50 dark:bg-[#121215]">
                 <div>
-                  <h3 className="font-bold text-xs text-slate-800 dark:text-white">Active Directives</h3>
-                  <p className="text-[10px] text-slate-500">{alerts.length} warning notices issued</p>
+                  <h3 className="font-bold text-xs text-slate-800 dark:text-white">{t('top_header.active_directives', 'Active Directives')}</h3>
+                  <p className="text-[10px] text-slate-500">{t('top_header.warning_notices_issued', '{{count}} warning notices issued', { count: alerts.length })}</p>
                 </div>
                 <Link
                   to="/alerts"
                   onClick={() => setIsNotifOpen(false)}
                   className="text-[11px] font-bold text-[#006B4F] dark:text-emerald-400 hover:underline"
                 >
-                  View all
+                  {t('top_header.view_all', 'View all')}
                 </Link>
               </div>
 
@@ -350,7 +350,7 @@ export default function TopHeader({
                   onClick={() => setIsNotifOpen(false)}
                   className="text-xs font-semibold text-[#006B4F] dark:text-emerald-400 hover:underline"
                 >
-                  Go to Emergency Directives Portal
+                  {t('top_header.go_to_directives', 'Go to Emergency Directives Portal')}
                 </Link>
               </div>
             </div>
@@ -397,7 +397,7 @@ export default function TopHeader({
                 className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-[#F5F7F6] dark:hover:bg-[#141418]"
               >
                 <User className="w-4 h-4 text-slate-400" />
-                <span>My Profile</span>
+                <span>{t('top_header.my_profile', 'My Profile')}</span>
               </button>
 
               <button
@@ -408,7 +408,7 @@ export default function TopHeader({
                 className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-[#F5F7F6] dark:hover:bg-[#141418]"
               >
                 <Settings className="w-4 h-4 text-slate-400" />
-                <span>Portal Settings</span>
+                <span>{t('top_header.portal_settings', 'Portal Settings')}</span>
               </button>
 
               <div className="my-1 border-t border-[#D9E2DE] dark:border-[#1E1E24]" />
@@ -421,7 +421,7 @@ export default function TopHeader({
                 className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-[#E63946] hover:bg-red-50 dark:hover:bg-red-950/30"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
+                <span>{t('top_header.sign_out', 'Sign Out')}</span>
               </button>
             </div>
           )}

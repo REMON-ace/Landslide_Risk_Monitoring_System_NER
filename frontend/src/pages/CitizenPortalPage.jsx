@@ -1,6 +1,7 @@
 // CitizenPortalPage.jsx — dedicated portal for verified citizen users
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { getAlerts, getRiskZones, submitFieldReport } from '../api/client';
 import {
@@ -126,6 +127,7 @@ function ReportModal({ onClose, onSubmit }) {
 import { getAlerts, getRiskZones, submitFieldReport, getFieldReports } from '../api/client';
 
 export default function CitizenPortalPage() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { isOnline } = useOfflineSync();
@@ -193,8 +195,8 @@ export default function CitizenPortalPage() {
             <img src="/logo.svg" alt="NER LEWS" className="w-full h-full object-cover" />
           </div>
           <div className="hidden sm:flex flex-col">
-            <span className="font-extrabold text-xs text-[#006B4F] dark:text-emerald-400">Landslide Early Warning</span>
-            <span className="text-[10px] text-slate-500 dark:text-zinc-500">Citizen Portal · {user?.district || 'NER'}</span>
+            <span className="font-extrabold text-xs text-[#006B4F] dark:text-emerald-400">{t('citizen.early_warning', { defaultValue: 'Landslide Early Warning' })}</span>
+            <span className="text-[10px] text-slate-500 dark:text-zinc-500">{t('citizen.portal_sub', { defaultValue: 'Citizen Portal' })} · {user?.district || 'NER'}</span>
           </div>
         </div>
 
@@ -204,7 +206,7 @@ export default function CitizenPortalPage() {
                      : 'bg-red-50 text-[#E63946] dark:bg-red-950/40 dark:text-red-400 border-red-200'
           }`}>
             {isOnline ? <Wifi className="w-3 h-3 text-[#006B4F]" /> : <WifiOff className="w-3 h-3 text-[#E63946]" />}
-            <span>{isOnline ? 'Online' : 'Offline'}</span>
+            <span>{isOnline ? t('nav.online', { defaultValue: 'Online' }) : t('nav.offline', { defaultValue: 'Offline' })}</span>
           </div>
 
           <button
@@ -219,7 +221,7 @@ export default function CitizenPortalPage() {
               {user?.username ? user.username[0].toUpperCase() : 'C'}
             </div>
             <span className="text-[11px] font-semibold text-slate-700 dark:text-zinc-200 truncate max-w-[80px]">
-              {user?.username || 'Citizen'}
+              {user?.username || t('report_form.citizen', { defaultValue: 'Citizen' })}
             </span>
           </div>
 
@@ -228,7 +230,7 @@ export default function CitizenPortalPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#E63946] hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent hover:border-red-200 dark:hover:border-red-900 transition-all cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <span className="hidden sm:inline">{t('citizen.sign_out', { defaultValue: 'Sign Out' })}</span>
           </button>
         </div>
       </header>
@@ -240,18 +242,18 @@ export default function CitizenPortalPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 opacity-80" />
-                <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Verified Resident</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">{t('citizen.verified_view', { defaultValue: 'Verified Resident View' })}</span>
               </div>
-              <h1 className="text-base sm:text-lg font-black">Stay Safe, Stay Informed</h1>
+              <h1 className="text-base sm:text-lg font-black">{t('citizen_dashboard.welcome_banner', { defaultValue: 'Stay Safe, Stay Informed' })}</h1>
               <p className="text-[11px] opacity-70">
-                Receive real-time landslide alerts for {user?.district || 'your district'} and report hazards to help protect your community.
+                {t('citizen_dashboard.welcome_subtitle', { defaultValue: `Receive real-time landslide alerts for ${user?.district || 'your district'} and report hazards to help protect your community.` })}
               </p>
             </div>
             <div className="shrink-0 flex flex-col items-center gap-1.5">
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
                 <Bell className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold opacity-80">{alerts.length} Alerts</span>
+              <span className="text-[10px] font-bold opacity-80">{alerts.length} {t('citizen.alerts', { defaultValue: 'Alerts' })}</span>
             </div>
           </div>
 

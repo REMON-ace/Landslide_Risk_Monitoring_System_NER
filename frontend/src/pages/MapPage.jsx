@@ -86,10 +86,10 @@ export default function MapPage() {
     <div className="space-y-5 pb-12">
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
-        kicker="Geospatial Intelligence Portal"
-        title="East Khasi Hills GIS Hazard Map"
-        description="Spatial surveillance of geocells, arterial road pass conditions, and settlement proximity across the Meghalaya plateau."
-        badge={`${filteredZones.length} Monitored Cells`}
+        kicker={t('map_page.kicker', { defaultValue: 'Geospatial Intelligence Portal' })}
+        title={t('map_page.title', { defaultValue: 'East Khasi Hills GIS Hazard Map' })}
+        description={t('map_page.subtitle', { defaultValue: 'Spatial surveillance of geocells, arterial road pass conditions, and settlement proximity across the Meghalaya plateau.' })}
+        badge={`${filteredZones.length} ${t('map_page.monitored_cells', { defaultValue: 'Monitored Cells' })}`}
         actions={
           <>
             <button
@@ -97,13 +97,13 @@ export default function MapPage() {
               className="px-3.5 py-2 rounded-lg bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
             >
               <Radio className="w-3.5 h-3.5 animate-pulse" />
-              <span>Issue Directive</span>
+              <span>{t('alerts_page.broadcast_directive', { defaultValue: 'Issue Directive' })}</span>
             </button>
             <button
               onClick={loadData}
               disabled={isLoading}
               className="p-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:text-[#006B4F] text-xs transition-all shadow-xs"
-              title="Refresh Map Layers"
+              title={t('common.refresh', { defaultValue: 'Refresh Map Layers' })}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -120,7 +120,7 @@ export default function MapPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter by village name or zone ID..."
+              placeholder={t('common.search', { defaultValue: 'Filter by village name or zone ID...' })}
               className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs text-slate-800 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:border-[#006B4F] focus:ring-1 focus:ring-[#006B4F]"
             />
           </div>
@@ -129,7 +129,7 @@ export default function MapPage() {
               onClick={() => setSearchQuery('')}
               className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"
             >
-              Clear
+              {t('common.cancel', { defaultValue: 'Clear' })}
             </button>
           )}
         </div>
@@ -137,18 +137,18 @@ export default function MapPage() {
         <div className="flex items-center gap-2">
           <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <span className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
-            Severity:
+            {t('alerts_page.severity_label', { defaultValue: 'Severity:' })}
           </span>
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
             className="px-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs text-slate-800 dark:text-zinc-200 font-medium focus:outline-none focus:border-[#006B4F]"
           >
-            <option value="all">All Severities ({zones.length})</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="all">{t('alerts_page.all_severities', 'All Severities')} ({zones.length})</option>
+            <option value="critical">{t('severity.critical_short', 'Critical')}</option>
+            <option value="high">{t('severity.high_short', 'High')}</option>
+            <option value="medium">{t('severity.medium_short', 'Medium')}</option>
+            <option value="low">{t('severity.low_short', 'Low')}</option>
           </select>
         </div>
       </div>
@@ -183,19 +183,19 @@ export default function MapPage() {
               <div className="pb-3 border-b border-[#D9E2DE] dark:border-[#1E1E24] shrink-0">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-xs text-[#006B4F] dark:text-emerald-400 uppercase tracking-wider">
-                    Monitored Cells ({filteredZones.length})
+                    {t('map_page.monitored_cells', 'Monitored Cells')} ({filteredZones.length})
                   </h3>
-                  <span className="text-[10px] text-slate-400">Click to focus</span>
+                  <span className="text-[10px] text-slate-400">{t('map_page.click_to_focus', 'Click to focus')}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
-                  Select any grid cell to view geomorphological slope, curvature, rainfall index, and historical risk.
+                  {t('map_page.cell_select_desc', 'Select any grid cell to view geomorphological slope, curvature, rainfall index, and historical risk.')}
                 </p>
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-2 pr-1">
                 {filteredZones.length === 0 ? (
                   <div className="p-8 text-center text-xs text-slate-400">
-                    No matching zones found.
+                    {t('map_page.no_matching_zones', 'No matching zones found.')}
                   </div>
                 ) : (
                   filteredZones.map((z) => (

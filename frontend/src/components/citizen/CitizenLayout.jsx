@@ -21,7 +21,7 @@ export default function CitizenLayout() {
   const { user, logout, isOfficial } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { isOnline } = useOfflineSync();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
 
   const [isMobileOpen,   setIsMobileOpen]   = useState(false);
@@ -70,10 +70,10 @@ export default function CitizenLayout() {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="font-extrabold text-xs tracking-tight text-[#006B4F] dark:text-emerald-400 truncate">
-                  NER Landslide Portal
+                  {t('citizen.portal_brand', 'NER Landslide Portal')}
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#006B4F]" /> Citizen Portal
+                  <ShieldCheck className="w-3 h-3 text-[#006B4F]" /> {t('citizen.portal_sub', 'Citizen Portal')}
                 </span>
               </div>
             )}
@@ -87,7 +87,7 @@ export default function CitizenLayout() {
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {!isCollapsed && (
             <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-3">
-              Citizen Navigation
+              {t('citizen.navigation', 'Citizen Navigation')}
             </p>
           )}
           {NAV_ITEMS.map(({ path, label, icon: Icon, end }) => (
@@ -110,7 +110,7 @@ export default function CitizenLayout() {
               {({ isActive }) => (
                 <>
                   <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-zinc-400 group-hover:text-[#006B4F] dark:group-hover:text-emerald-400'}`} />
-                  {!isCollapsed && <span className="truncate">{label}</span>}
+                  {!isCollapsed && <span className="truncate">{t(`sidebar.${label.toLowerCase().replace(' ', '_')}`, label)}</span>}
                 </>
               )}
             </NavLink>
@@ -174,17 +174,17 @@ export default function CitizenLayout() {
             {/* Breadcrumb */}
             <div className="hidden sm:flex flex-col">
               <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400">
-                <span>Citizen Portal</span>
+                <span>{t('citizen.portal_sub', 'Citizen Portal')}</span>
                 <span>/</span>
                 <strong className="text-slate-800 dark:text-zinc-200 font-semibold capitalize">
-                  {location.pathname === '/citizen' ? 'Dashboard'
-                    : location.pathname === '/citizen/map' ? 'Risk Map'
-                    : location.pathname === '/citizen/reports' ? 'Field Reports'
-                    : location.pathname === '/citizen/alerts' ? 'Alerts'
-                    : 'Overview'}
+                  {location.pathname === '/citizen' ? t('sidebar.dashboard', 'Dashboard')
+                    : location.pathname === '/citizen/map' ? t('sidebar.risk_map', 'Risk Map')
+                    : location.pathname === '/citizen/reports' ? t('sidebar.field_reports', 'Field Reports')
+                    : location.pathname === '/citizen/alerts' ? t('sidebar.alerts', 'Alerts')
+                    : t('top_header.overview', 'Overview')}
                 </strong>
               </div>
-              <span className="text-[10px] text-[#006B4F] dark:text-emerald-400 font-semibold">Verified Resident View</span>
+              <span className="text-[10px] text-[#006B4F] dark:text-emerald-400 font-semibold">{t('citizen.verified_view', 'Verified Resident View')}</span>
             </div>
           </div>
 
@@ -270,7 +270,7 @@ export default function CitizenLayout() {
                 {user?.username || 'Citizen'}
               </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 font-bold border border-[#006B4F]/20">
-                Verified
+                {t('citizen.verified_badge', 'Verified')}
               </span>
             </div>
 
@@ -280,7 +280,7 @@ export default function CitizenLayout() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#E63946] hover:bg-red-50 dark:hover:bg-red-950/30 border border-transparent hover:border-red-200 dark:hover:border-red-900 transition-all cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
+              <span className="hidden sm:inline">{t('top_header.sign_out', 'Sign Out')}</span>
             </button>
           </div>
         </header>
@@ -295,10 +295,10 @@ export default function CitizenLayout() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-2 text-[11px] text-slate-400 dark:text-zinc-500">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#006B4F]" />
-              <span className="font-semibold text-[#006B4F] dark:text-emerald-400">NER Landslide Early Warning</span>
-              <span>• Citizen Portal</span>
+              <span className="font-semibold text-[#006B4F] dark:text-emerald-400">{t('citizen.early_warning', 'NER Landslide Early Warning')}</span>
+              <span>• {t('citizen.portal_sub', 'Citizen Portal')}</span>
             </div>
-            <span>Emergency: SDRF 1077</span>
+            <span>{t('citizen.emergency_sdrf', 'Emergency: SDRF 1077')}</span>
           </div>
         </footer>
       </div>

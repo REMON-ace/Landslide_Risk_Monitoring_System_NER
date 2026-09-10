@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   MapPin,
   X,
@@ -30,6 +31,7 @@ export default function MonitoredSituationModal({
   onOpenReport,
   onSelectZone,
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   if (!isOpen) return null;
@@ -61,13 +63,13 @@ export default function MonitoredSituationModal({
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                Monitored Area Situation
+                {t('dashboard.monitored_situation', { defaultValue: 'Monitored Area Situation' })}
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EAF5F0] dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/20">
                   GIS Active
                 </span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                East Khasi Hills Regional Disaster Surveillance Overview
+                {t('dashboard.subtitle', { defaultValue: 'East Khasi Hills Regional Disaster Surveillance Overview' })}
               </p>
             </div>
           </div>

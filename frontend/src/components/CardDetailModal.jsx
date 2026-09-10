@@ -507,11 +507,11 @@ export default function CardDetailModal({
   };
 
   const subtitles = {
-    total_zones: 'All monitored zones with location, risk level, status, coordinates, and latest readings',
-    high_risk: 'Zones classified as High or Critical risk requiring immediate attention',
-    roads_blocked: 'Road corridors currently blocked or partially obstructed by landslide events',
-    active_alerts: 'Community alerts currently active across monitored areas',
-    reports_24h: 'Recent field reports submitted by officials and citizens in the last 24 hours',
+    total_zones: t('card_modal.sub_total_zones', { defaultValue: 'All monitored zones with location, risk level, status, coordinates, and latest readings' }),
+    high_risk: t('card_modal.sub_high_risk', { defaultValue: 'Zones classified as High or Critical risk requiring immediate attention' }),
+    roads_blocked: t('card_modal.sub_roads_blocked', { defaultValue: 'Road corridors currently blocked or partially obstructed by landslide events' }),
+    active_alerts: t('card_modal.sub_active_alerts', { defaultValue: 'Community alerts currently active across monitored areas' }),
+    reports_24h: t('card_modal.sub_reports_24h', { defaultValue: 'Recent field reports submitted by officials and citizens in the last 24 hours' }),
   };
 
   return (
@@ -534,7 +534,7 @@ export default function CardDetailModal({
               <h2 className="font-extrabold text-base text-[#1F2937] dark:text-white flex items-center gap-2">
                 <span>{cardTitle}</span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
-                  {cardValue} Items
+                  {cardValue} {t('common.items', { defaultValue: 'Items' })}
                 </span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
@@ -560,7 +560,7 @@ export default function CardDetailModal({
         <div className="px-5 py-3 border-t border-[#D9E2DE] dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-900/60">
           <div className="text-[11px] text-slate-400 dark:text-zinc-500 font-mono flex items-center gap-1.5">
             <Eye className="w-3.5 h-3.5" />
-            <span>Synced with dashboard data</span>
+            <span>{t('card_modal.synced_dashboard', { defaultValue: 'Synced with dashboard data' })}</span>
           </div>
           <button
             type="button"
@@ -568,7 +568,7 @@ export default function CardDetailModal({
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-[#D9E2DE] dark:border-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Dashboard
+            {t('common.back_dashboard', { defaultValue: 'Back to Dashboard' })}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 // Citizen Alerts Page — read-only view of active emergency alerts
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getAlerts, getRiskZones } from '../../api/client';
 import AlertDetailModal from '../../components/AlertDetailModal';
 import {
@@ -36,6 +37,7 @@ const SEVERITY_CONFIG = {
 };
 
 export default function CitizenAlertsPage() {
+  const { t } = useTranslation();
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [selectedAlertForModal, setSelectedAlertForModal] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -66,10 +68,10 @@ export default function CitizenAlertsPage() {
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <Bell className="w-5 h-5 text-[#006B4F]" />
-            <h1 className="text-base font-black text-slate-900 dark:text-white">Emergency Alerts</h1>
+            <h1 className="text-base font-black text-slate-900 dark:text-white">{t('top_header.emergency_alerts', 'Emergency Alerts')}</h1>
           </div>
           <p className="text-xs text-slate-500 dark:text-zinc-400">
-            Live landslide warnings and advisories issued by the district operations centre.
+            {t('alerts_view.subtitle', 'Live landslide warnings and advisories issued by the district operations centre.')}
           </p>
         </div>
         <button
@@ -78,7 +80,7 @@ export default function CitizenAlertsPage() {
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/30 hover:bg-[#EAF5F0] dark:hover:bg-emerald-950/20 transition-all cursor-pointer disabled:opacity-50 shrink-0"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('common.refresh', 'Refresh')}
         </button>
       </div>
 
@@ -88,10 +90,10 @@ export default function CitizenAlertsPage() {
           <AlertTriangle className="w-5 h-5 text-[#E63946] shrink-0 animate-pulse" />
           <div>
             <p className="text-xs font-black text-[#E63946]">
-              ⚠ {criticalAlerts.length} CRITICAL ALERT{criticalAlerts.length > 1 ? 'S' : ''} ACTIVE
+              ⚠ {criticalAlerts.length} {t('emergency_alerts.critical_risk', 'CRITICAL ALERT')} {criticalAlerts.length > 1 ? 'S' : ''} ACTIVE
             </p>
             <p className="text-[11px] text-red-600/80 dark:text-red-400/80 mt-0.5">
-              Immediate action required. Follow official evacuation instructions.
+              {t('emergency_alerts.recommended_action', 'Immediate action required. Follow official evacuation instructions.')}
             </p>
           </div>
         </div>
@@ -110,7 +112,7 @@ export default function CitizenAlertsPage() {
                 : 'bg-white dark:bg-[#0D0E10] text-slate-600 dark:text-zinc-300 border-[#D9E2DE] dark:border-[#27272A] hover:border-[#006B4F]/50'
             }`}
           >
-            {sev === 'all' ? `All (${alerts.length})` : `${sev} (${alerts.filter(a => a.severity === sev).length})`}
+            {sev === 'all' ? `${t('alerts_view.filter_all', 'All')} (${alerts.length})` : `${t(`severity.${sev}_short`, sev)} (${alerts.filter(a => a.severity === sev).length})`}
           </button>
         ))}
       </div>
@@ -124,11 +126,11 @@ export default function CitizenAlertsPage() {
         <div className="flex flex-col items-center py-14 gap-3">
           <CheckCircle2 className="w-10 h-10 text-[#006B4F]" />
           <p className="font-bold text-sm text-slate-700 dark:text-zinc-200">
-            {filterSeverity === 'all' ? 'No active alerts' : `No ${filterSeverity} alerts`}
+            {filterSeverity === 'all' ? t('alerts_list.empty', 'No active alerts') : `${t('alerts_list.empty', 'No alerts')} (${sev})`}
           </p>
           <p className="text-xs text-slate-500 text-center max-w-xs">
             {filterSeverity === 'all'
-              ? 'Your district is currently clear. Continue to check regularly during monsoon season.'
+              ? t('citizen.safe_district', 'Your district is currently clear. Continue to check regularly during monsoon season.')
               : 'Try a different severity filter.'}
           </p>
         </div>
@@ -172,7 +174,7 @@ export default function CitizenAlertsPage() {
                     {alert.village || alert.zone_id}
                   </span>
                   <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-                    Click for description & location map →
+                    {t('alerts_page.click_to_enlarge', 'Click for description & location map')} →
                   </span>
                 </div>
               </div>
@@ -184,7 +186,7 @@ export default function CitizenAlertsPage() {
       {/* Emergency contacts */}
       <div className="rounded-xl bg-[#EAF5F0] dark:bg-emerald-950/20 border border-[#006B4F]/15 dark:border-emerald-900/30 p-4 space-y-2">
         <p className="text-[11px] font-black text-[#006B4F] dark:text-emerald-400 flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5" /> Emergency Contacts
+          <Info className="w-3.5 h-3.5" /> {t('alerts_page.emergency_contacts_kicker', 'Emergency Contacts')}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-zinc-400">
           <div><span className="font-bold">SDRF Helpline:</span> 1077</div>

@@ -140,20 +140,20 @@ export default function PublicAlertsPage() {
   });
 
   const emergencyContacts = [
-    { name: 'DEOC Shillong (Emergency Control)', number: '1077', desc: 'Toll-free 24/7 District EOC' },
-    { name: 'Meghalaya SDMA Control Room', number: '0364-2503022', desc: 'State Disaster Management Authority' },
-    { name: 'SDRF Quick Response Team', number: '112', desc: 'Unified Emergency Response Support' },
-    { name: 'Police Control Room (Sohra/Shillong)', number: '0364-2222214', desc: 'Law & Order & Evacuation Escort' },
+    { name: t('emergency_contacts.deoc_name', 'DEOC Shillong (Emergency Control)'), number: '1077', desc: t('emergency_contacts.deoc_desc', 'Toll-free 24/7 District EOC') },
+    { name: t('emergency_contacts.sdma_name', 'Meghalaya SDMA Control Room'), number: '0364-2503022', desc: t('emergency_contacts.sdma_desc', 'State Disaster Management Authority') },
+    { name: t('emergency_contacts.sdrf_name', 'SDRF Quick Response Team'), number: '112', desc: t('emergency_contacts.sdrf_desc', 'Unified Emergency Response Support') },
+    { name: t('emergency_contacts.police_name', 'Police Control Room (Sohra/Shillong)'), number: '0364-2222214', desc: t('emergency_contacts.police_desc', 'Law & Order & Evacuation Escort') },
   ];
 
   return (
     <div className="space-y-6 pb-16">
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
-        kicker="Emergency Directives & Early Warning"
-        title="Public Directives & Hazard Warning Bulletins"
-        description="Official early warning advisory bulletins dispatched to communities, local Dorbar Shnongs, emergency services, and ground response coordinators."
-        badge={`${filteredAlerts.length} Directives Issued`}
+        kicker={t('alerts_page.kicker', 'Emergency Directives & Early Warning')}
+        title={t('alerts_page.title', 'Public Directives & Hazard Warning Bulletins')}
+        description={t('alerts_page.description', 'Official early warning advisory bulletins dispatched to communities, local Dorbar Shnongs, emergency services, and ground response coordinators.')}
+        badge={t('alerts_page.directives_issued', '{{count}} Directives Issued', { count: filteredAlerts.length })}
         actions={
           <>
             {isOfficial && (
@@ -162,7 +162,7 @@ export default function PublicAlertsPage() {
                 className="px-3.5 py-2 rounded-lg bg-[#E63946] hover:bg-[#C92A37] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                <span>Broadcast Directive</span>
+                <span>{t('alerts_page.broadcast_directive', 'Broadcast Directive')}</span>
               </button>
             )}
 
@@ -171,14 +171,14 @@ export default function PublicAlertsPage() {
               className="px-3 py-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:text-[#006B4F] text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
             >
               <History className="w-3.5 h-3.5 text-slate-500" />
-              <span>Full Archive Log</span>
+              <span>{t('alerts_page.full_archive_log', 'Full Archive Log')}</span>
             </button>
 
             <button
               onClick={loadAlerts}
               disabled={isLoading}
               className="p-2 rounded-lg bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:text-[#006B4F] text-xs transition-all shadow-xs"
-              title="Refresh alerts"
+              title={t('common.refresh', 'Refresh All Telemetry')}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -189,20 +189,20 @@ export default function PublicAlertsPage() {
       {isCached && (
         <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2.5">
           <Info className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>Displaying cached emergency bulletins from local encrypted storage due to offline connectivity.</span>
+          <span>{t('alerts_page.cached_storage_notice', 'Displaying cached emergency bulletins from local encrypted storage due to offline connectivity.')}</span>
         </div>
       )}
 
       {/* ── Filter Bar ─────────────────────────────────────────── */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] flex flex-wrap items-center gap-4 text-xs shadow-sm">
+      <div className="p-4 rounded-xl bg-[#FFFFFF] dark:bg-[#0D0E10] border border-[#D9E2DE] dark:border-[#27272A] flex flex-wrap items-center gap-4 text-xs shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-slate-700 dark:text-zinc-300">District:</span>
+          <span className="font-bold text-slate-700 dark:text-zinc-300">{t('alerts_page.district_label', 'District:')}</span>
           <select
             value={selectedDistrict}
             onChange={(e) => setSelectedDistrict(e.target.value)}
             className="px-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-800 dark:text-zinc-200 font-medium focus:outline-none focus:border-[#006B4F]"
           >
-            <option value="all">All Districts ({districtList.length})</option>
+            <option value="all">{t('alerts_page.all_districts', 'All Districts ({{count}})', { count: districtList.length })}</option>
             {districtList.map((d) => (
               <option key={d} value={d}>
                 {d}
@@ -212,13 +212,13 @@ export default function PublicAlertsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-bold text-slate-700 dark:text-zinc-300">Sector / Village:</span>
+          <span className="font-bold text-slate-700 dark:text-zinc-300">{t('alerts_page.sector_village_label', 'Sector / Village:')}</span>
           <select
             value={selectedVillage}
             onChange={(e) => setSelectedVillage(e.target.value)}
             className="px-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-800 dark:text-zinc-200 font-medium focus:outline-none focus:border-[#006B4F]"
           >
-            <option value="all">All Villages & Sectors ({villages.length})</option>
+            <option value="all">{t('alerts_page.all_villages', 'All Villages & Sectors ({{count}})', { count: villages.length })}</option>
             {villages.map((v) => (
               <option key={v.village_id} value={v.name}>
                 {v.name} ({v.district || 'East Khasi Hills'})
@@ -228,17 +228,17 @@ export default function PublicAlertsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-bold text-slate-700 dark:text-zinc-300">Severity:</span>
+          <span className="font-bold text-slate-700 dark:text-zinc-300">{t('alerts_page.severity_label', 'Severity:')}</span>
           <select
             value={selectedSeverity}
             onChange={(e) => setSelectedSeverity(e.target.value)}
             className="px-3 py-1.5 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-800 dark:text-zinc-200 font-medium focus:outline-none focus:border-[#006B4F]"
           >
-            <option value="all">All Severities</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="all">{t('alerts_page.all_severities', 'All Severities')}</option>
+            <option value="critical">{t('severity.critical_short', 'Critical')}</option>
+            <option value="high">{t('severity.high_short', 'High')}</option>
+            <option value="medium">{t('severity.medium_short', 'Medium')}</option>
+            <option value="low">{t('severity.low_short', 'Low')}</option>
           </select>
         </div>
       </div>
@@ -248,15 +248,15 @@ export default function PublicAlertsPage() {
         {/* Left: Active Directives Stream */}
         <div className="lg:col-span-8 space-y-4">
           <SectionCard
-            kicker="Active Hazard Directives"
-            title="Emergency Bulletins Feed"
-            subtitle="Advisories prioritized by geomorphological severity index and community vulnerability."
-            badge={`${filteredAlerts.length} Directives`}
+            kicker={t('alerts_page.active_directives_kicker', 'Active Hazard Directives')}
+            title={t('alerts_page.bulletins_feed_title', 'Emergency Bulletins Feed')}
+            subtitle={t('alerts_page.bulletins_feed_subtitle', 'Advisories prioritized by geomorphological severity index and community vulnerability.')}
+            badge={t('alerts_page.directives_count', '{{count}} Directives', { count: filteredAlerts.length })}
           >
             <div className="space-y-3.5">
               {filteredAlerts.length === 0 ? (
                 <div className="p-12 text-center text-xs text-slate-400 dark:text-zinc-500">
-                  No active emergency directives matching the selected criteria.
+                  {t('alerts_page.no_matching_directives', 'No active emergency directives matching the selected criteria.')}
                 </div>
               ) : (
                 filteredAlerts.map((alert) => {
@@ -279,7 +279,7 @@ export default function PublicAlertsPage() {
                           </span>
                           <RiskBadge severity={alert.severity} />
                           <span className="font-bold text-xs text-slate-800 dark:text-zinc-200">
-                            {alert.village || 'Sohra'} Sector ({alert.district || 'East Khasi Hills'})
+                            {alert.village || 'Sohra'} {t('alerts_page.sector', 'Sector')} ({alert.district || 'East Khasi Hills'})
                           </span>
                         </div>
 
@@ -305,7 +305,7 @@ export default function PublicAlertsPage() {
                       {(alert.description || alert.details) && (
                         <div className="p-3 rounded-lg bg-[#F5F7F6]/80 dark:bg-[#141418] border border-[#D9E2DE]/80 dark:border-zinc-800/80 text-xs text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
                           <strong className="block text-[10px] uppercase font-bold text-[#006B4F] dark:text-emerald-400 mb-1">
-                            Detailed Hazard Situation & Advisory:
+                            {t('alerts_page.detailed_advisory', 'Detailed Hazard Situation & Advisory:')}
                           </strong>
                           <p>{alert.description || alert.details}</p>
                         </div>
@@ -324,13 +324,13 @@ export default function PublicAlertsPage() {
                             }}
                           />
                           <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-[10px] font-bold">
-                            Click to Enlarge
+                            {t('alerts_page.click_to_enlarge', 'Click to Enlarge')}
                           </div>
                         </div>
                       )}
 
                       <div className="flex items-center justify-between pt-2.5 border-t border-[#D9E2DE]/70 dark:border-[#27272A]/70 text-[11px] text-slate-500 font-mono flex-wrap gap-2">
-                        <span>Configured Channels: {(alert.sent_via || alert.channels)?.join(' • ')?.toUpperCase() || 'APP • SMS'}</span>
+                        <span>{t('alerts_page.configured_channels', 'Configured Channels:')} {(alert.sent_via || alert.channels)?.join(' • ')?.toUpperCase() || 'APP • SMS'}</span>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={(e) => {
@@ -341,7 +341,7 @@ export default function PublicAlertsPage() {
                             className="px-3 py-1 rounded-lg bg-[#006B4F]/10 dark:bg-emerald-950/40 text-[#006B4F] dark:text-emerald-400 border border-[#006B4F]/20 font-bold text-xs hover:bg-[#006B4F] hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white transition-all flex items-center gap-1.5 shadow-xs"
                           >
                             <MapPin className="w-3.5 h-3.5" />
-                            <span>View Location on Map</span>
+                            <span>{t('alerts_page.view_location_on_map', 'View Location on Map')}</span>
                           </button>
                         </div>
                       </div>
@@ -357,9 +357,9 @@ export default function PublicAlertsPage() {
         <div className="lg:col-span-4 space-y-5">
           {/* Helplines Card */}
           <SectionCard
-            kicker="Emergency Contacts"
-            title="Helplines & Disaster Desk"
-            subtitle="Immediate response assistance"
+            kicker={t('alerts_page.emergency_contacts_kicker', 'Emergency Contacts')}
+            title={t('alerts_page.helplines_title', 'Helplines & Disaster Desk')}
+            subtitle={t('alerts_page.helplines_subtitle', 'Immediate response assistance')}
           >
             <div className="space-y-2.5 text-xs">
               {emergencyContacts.map((c, i) => (
@@ -386,26 +386,26 @@ export default function PublicAlertsPage() {
 
           {/* Safety Protocols Card */}
           <SectionCard
-            kicker="Protocols"
-            title="Landslide Safety Guidelines"
-            subtitle="Advisories for local residents"
+            kicker={t('alerts_page.safety_kicker', 'Protocols')}
+            title={t('alerts_page.safety_title', 'Landslide Safety Guidelines')}
+            subtitle={t('alerts_page.safety_subtitle', 'Advisories for local residents')}
           >
             <ul className="space-y-2.5 text-xs text-slate-700 dark:text-zinc-300">
               <li className="flex items-start gap-2">
                 <span className="text-[#008060] font-bold">✓</span>
-                <span>Stay alert during continuous heavy rain (&gt;50mm/24h) and watch for hillside water pooling.</span>
+                <span>{t('safety.do1', 'Stay alert during continuous heavy rain (>50mm/24h) and watch for hillside water pooling.')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#008060] font-bold">✓</span>
-                <span>Evacuate immediately if tensile cracks or bulging ground are observed near foundations.</span>
+                <span>{t('safety.do2', 'Evacuate immediately if tensile cracks or bulging ground are observed near foundations.')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#E63946] font-bold">✗</span>
-                <span>Do NOT cross inundated hillside roads or bridges during flash floods or debris runs.</span>
+                <span>{t('safety.dont1', 'Do NOT cross inundated hillside roads or bridges during flash floods or debris runs.')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#E63946] font-bold">✗</span>
-                <span>Do NOT stay in buildings located directly below steep, excavated road cuttings.</span>
+                <span>{t('safety.dont2', 'Do NOT stay in buildings located directly below steep, excavated road cuttings.')}</span>
               </li>
             </ul>
           </SectionCard>

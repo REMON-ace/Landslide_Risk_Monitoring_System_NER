@@ -37,7 +37,7 @@ export default function RegisterPage() {
     setError(null);
     setSuccess(null);
     if (!proofFile) {
-      setError('Please upload a residency proof document.');
+      setError(t('register.proof_required', 'Please upload a residency proof document.'));
       return;
     }
     const formData = new FormData();
@@ -48,10 +48,10 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await register(formData);
-      setSuccess('Registration submitted! Your account is pending verification.');
+      setSuccess(t('register.success_msg', 'Registration submitted! Your account is pending verification.'));
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
-      setError(err.message || 'Registration failed.');
+      setError(err.message || t('register.failed_msg', 'Registration failed.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -66,9 +66,9 @@ export default function RegisterPage() {
             <User className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            Register for NER Landslide Portal
+            {t('register.title', 'Register for NER Landslide Portal')}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-zinc-400">Provide residency proof to activate your account.</p>
+          <p className="text-xs text-slate-500 dark:text-zinc-400">{t('register.subtitle', 'Provide residency proof to activate your account.')}</p>
         </div>
 
         {/* Error */}
@@ -89,7 +89,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="space-y-1.5">
             <label htmlFor="reg-username" className="block font-semibold text-slate-700 dark:text-zinc-300">
-              Username <span className="text-[#E63946]">*</span>
+              {t('register.username', 'Username')} <span className="text-[#E63946]">*</span>
             </label>
             <div className="relative">
               <User className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
@@ -107,7 +107,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label htmlFor="reg-password" className="block font-semibold text-slate-700 dark:text-zinc-300">
-              Password <span className="text-[#E63946]">*</span>
+              {t('register.password', 'Password')} <span className="text-[#E63946]">*</span>
             </label>
             <div className="relative">
               <ShieldCheck className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
@@ -125,7 +125,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label htmlFor="reg-district" className="block font-semibold text-slate-700 dark:text-zinc-300">
-              District
+              {t('register.district', 'District')}
             </label>
             <select
               id="reg-district"
@@ -141,7 +141,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <label htmlFor="reg-proof" className="block font-semibold text-slate-700 dark:text-zinc-300">
-              Residency Proof (PDF, JPG, PNG) <span className="text-[#E63946]">*</span>
+              {t('register.residency_proof', 'Residency Proof (PDF, JPG, PNG)')} <span className="text-[#E63946]">*</span>
             </label>
             <input
               id="reg-proof"
@@ -158,14 +158,14 @@ export default function RegisterPage() {
             disabled={isSubmitting}
             className="w-full py-2.5 rounded-lg bg-[#006B4F] hover:bg-[#00523C] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] cursor-pointer"
           >
-            {isSubmitting ? 'Submitting...' : 'Create Account'}
+            {isSubmitting ? t('register.submitting', 'Submitting...') : t('register.create_account', 'Create Account')}
           </button>
         </form>
 
         <div className="text-center text-xs text-slate-500 dark:text-zinc-400">
-          Already have an account?{' '}
+          {t('register.already_account', 'Already have an account?')}{' '}
           <Link to="/login" className="text-[#006B4F] dark:text-emerald-400 font-bold hover:underline">
-            Sign In
+            {t('register.sign_in', 'Sign In')}
           </Link>
         </div>
       </div>

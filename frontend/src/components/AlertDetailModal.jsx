@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import RiskBadge from './admin/RiskBadge';
@@ -47,6 +48,7 @@ function MapRecenter({ center }) {
 }
 
 export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   if (!isOpen || !alert) return null;
@@ -97,7 +99,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
                 <RiskBadge severity={alert.severity} size="xs" />
               </div>
               <h2 className="text-base font-black text-slate-900 dark:text-white leading-tight mt-0.5">
-                {alert.village || 'Sohra'} Sector Directive Location
+                {t('alert_modal.sector_location', { village: alert.village || 'Sohra', defaultValue: `${alert.village || 'Sohra'} Sector Directive Location` })}
               </h2>
             </div>
           </div>
@@ -117,7 +119,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-[#E63946]" />
-                <span>Geospatial Location & Impact Area</span>
+                <span>{t('alert_modal.geospatial_location', { defaultValue: 'Geospatial Location & Impact Area' })}</span>
               </span>
               <span className="font-mono text-[11px] text-slate-500 dark:text-zinc-400">
                 {mapLat.toFixed(4)}°N, {mapLng.toFixed(4)}°E
@@ -139,7 +141,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
                 <Marker position={center} icon={createBeaconIcon(alert.severity)}>
                   <Popup>
                     <div className="text-xs font-bold p-1">
-                      {alert.village || 'Hazard Location'} ({alert.zone_id || ''})
+                      {alert.village || t('alert_modal.hazard_location', { defaultValue: 'Hazard Location' })} ({alert.zone_id || ''})
                     </div>
                   </Popup>
                 </Marker>
@@ -150,7 +152,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
                 onClick={handleOpenFullMap}
                 className="absolute bottom-3 right-3 z-[1000] px-3 py-1.5 rounded-lg bg-black/80 hover:bg-black text-white text-xs font-bold backdrop-blur-md border border-white/20 shadow-md flex items-center gap-1.5 transition-all"
               >
-                <span>Full GIS Map</span>
+                <span>{t('alert_modal.full_gis_map', { defaultValue: 'Full GIS Map' })}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -159,7 +161,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
           {/* Alert Main Message */}
           <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 block">
-              Official Early Warning Advisory:
+              {t('alert_modal.official_advisory', { defaultValue: 'Official Early Warning Advisory:' })}
             </span>
             <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 leading-snug">
               {alert.message}
@@ -170,7 +172,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
           {(alert.description || alert.details) && (
             <div className="p-3.5 rounded-xl bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-xs text-slate-700 dark:text-zinc-300 leading-relaxed space-y-1">
               <strong className="block text-[10px] uppercase font-bold text-[#006B4F] dark:text-emerald-400">
-                Detailed Situation Description:
+                {t('alert_modal.detailed_description', { defaultValue: 'Detailed Situation Description:' })}
               </strong>
               <p>{alert.description || alert.details}</p>
             </div>
@@ -180,12 +182,12 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
           {imageUrl && (
             <div className="space-y-1">
               <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                Field Evidence Photo:
+                {t('alert_modal.field_photo', { defaultValue: 'Field Evidence Photo:' })}
               </span>
               <div className="rounded-xl overflow-hidden border border-[#D9E2DE] dark:border-[#27272A] max-h-48">
                 <img
                   src={imageUrl}
-                  alt="Hazard photo"
+                  alt={t('alert_modal.photo_alt', { defaultValue: 'Hazard photo' })}
                   className="w-full h-48 object-cover"
                 />
               </div>
@@ -196,7 +198,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
           <div className="grid grid-cols-2 gap-3 text-xs pt-1">
             <div className="p-3 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A]">
               <span className="text-[10px] text-slate-500 dark:text-zinc-400 block font-mono">
-                TARGET ZONE ID
+                {t('alert_modal.target_zone', { defaultValue: 'TARGET ZONE ID' })}
               </span>
               <span className="font-bold text-slate-900 dark:text-white font-mono">
                 {alert.zone_id || 'N/A'}
@@ -205,7 +207,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
 
             <div className="p-3 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A]">
               <span className="text-[10px] text-slate-500 dark:text-zinc-400 block font-mono">
-                BROADCAST CHANNELS
+                {t('alert_modal.broadcast_channels', { defaultValue: 'BROADCAST CHANNELS' })}
               </span>
               <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                 {channels.map((ch) => (
@@ -221,7 +223,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
 
             <div className="p-3 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A]">
               <span className="text-[10px] text-slate-500 dark:text-zinc-400 block font-mono">
-                ISSUED TIMESTAMP
+                {t('alert_modal.issued_timestamp', { defaultValue: 'ISSUED TIMESTAMP' })}
               </span>
               <span className="font-semibold text-slate-800 dark:text-zinc-200">
                 {new Date(alert.sent_at || alert.timestamp || Date.now()).toLocaleString([], {
@@ -235,7 +237,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
 
             <div className="p-3 rounded-lg bg-[#F5F7F6] dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A]">
               <span className="text-[10px] text-slate-500 dark:text-zinc-400 block font-mono">
-                SECTOR / DISTRICT
+                {t('alert_modal.sector_district', { defaultValue: 'SECTOR / DISTRICT' })}
               </span>
               <span className="font-semibold text-slate-800 dark:text-zinc-200">
                 {alert.village || 'Sohra'} ({alert.district || 'East Khasi Hills'})
@@ -250,7 +252,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
             onClick={onClose}
             className="px-4 py-2 rounded-xl bg-white dark:bg-[#141418] border border-[#D9E2DE] dark:border-[#27272A] text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 text-xs font-semibold transition-all"
           >
-            Close
+            {t('common.close', { defaultValue: 'Close' })}
           </button>
 
           <button
@@ -258,7 +260,7 @@ export default function AlertDetailModal({ isOpen, onClose, alert, zones = [] })
             className="px-4 py-2 rounded-xl bg-[#006B4F] hover:bg-[#00543E] text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
           >
             <MapPin className="w-3.5 h-3.5" />
-            <span>Open Location on Interactive Map</span>
+            <span>{t('alert_modal.open_location_map', { defaultValue: 'Open Location on Interactive Map' })}</span>
           </button>
         </div>
       </div>
