@@ -12,6 +12,7 @@ import MapPage          from './pages/MapPage';
 import FieldReportPage  from './pages/FieldReportPage';
 import PublicAlertsPage from './pages/PublicAlertsPage';
 import PredictorPage    from './pages/PredictorPage';
+import WeatherSensorsPage from './pages/WeatherSensorsPage';
 
 // Citizen pages
 import CitizenDashboard   from './pages/citizen/CitizenDashboard';
@@ -98,6 +99,7 @@ export default function App() {
                 <Route path="/report"    element={<FieldReportPage />} />
                 <Route path="/alerts"    element={<PublicAlertsPage />} />
                 <Route path="/predict"   element={<PredictorPage />} />
+                <Route path="/weather"   element={<WeatherSensorsPage />} />
               </Route>
 
               {/* ── Catch-all: redirect unknown URLs to landing page ─── */}

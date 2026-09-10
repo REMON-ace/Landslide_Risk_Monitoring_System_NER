@@ -56,6 +56,7 @@ export default function Sidebar({
         { path: '/dashboard', label: t('sidebar.dashboard', 'Dashboard'), icon: LayoutDashboard },
         { path: '/map', label: t('sidebar.risk_map', 'Risk Map'), icon: Map },
         { path: '/predict', label: t('sidebar.risk_predictor', 'Risk Predictor'), icon: Cpu, isPredictor: true },
+        { path: '/weather', label: t('sidebar.weather_sensors', 'Weather & Sensors'), icon: CloudRain, isLive: true },
         { path: '/report', label: t('sidebar.field_reports', 'Field Reports'), icon: FileText, badge: pendingReportCount > 0 ? pendingReportCount : null },
         { path: '/alerts', label: t('sidebar.alerts', 'Alerts'), icon: Bell, badge: activeAlertCount > 0 ? activeAlertCount : null },
       ],
@@ -65,7 +66,7 @@ export default function Sidebar({
       items: [
         { path: '/dashboard', hash: '#roads-section', label: t('sidebar.roads', 'Roads'), icon: Route },
         { path: '/dashboard', hash: '#priority-zones', label: t('sidebar.villages', 'Villages'), icon: Home },
-        { path: '/dashboard', hash: '#weather-sensors', label: t('sidebar.weather_sensors', 'Weather & Sensors'), icon: CloudRain },
+        { path: '/weather', label: t('sidebar.weather_sensors', 'Weather & Sensors'), icon: CloudRain },
       ],
     },
     {
@@ -173,6 +174,13 @@ export default function Sidebar({
                       />
                       {!isCollapsed && <span className="truncate">{item.label}</span>}
                     </div>
+
+                    {!isCollapsed && item.isLive && (
+                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                        Live
+                      </span>
+                    )}
 
                     {!isCollapsed && item.badge && (
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
