@@ -8,7 +8,7 @@ import StatsBanner from '../components/landing/StatsBanner';
 import MissionSection from '../components/landing/MissionSection';
 import CtaSection from '../components/landing/CtaSection';
 import LandingFooter from '../components/landing/LandingFooter';
-// import AiRiskAssistant from '../components/admin/AiRiskAssistant';
+import AiRiskAssistant from '../components/admin/AiRiskAssistant';
 
 export default function LandingPage() {
   useEffect(() => {
