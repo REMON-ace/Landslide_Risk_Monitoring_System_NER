@@ -8,8 +8,6 @@ Create Date: 2026-09-09 19:12:41.777737+00:00
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-import geoalchemy2
 
 
 # revision identifiers, used by Alembic.
@@ -20,9 +18,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column('users', sa.Column('proof_path', sa.String(length=500), nullable=True))
-    op.add_column('users', sa.Column('is_verified', sa.Boolean(), nullable=False, server_default=sa.text('false')))
-    # Ensure existing rows have is_verified=False (default already applies)
+    # Some deployed instances temporarily added these columns during app startup
+    # before this revision was recorded.  Keep this historical migration safe to
+    # apply in either state so Alembic can advance its version table correctly.
+    op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS proof_path VARCHAR(500) NULL")
+    op.execute(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN NOT NULL DEFAULT false"
+    )
 
 def downgrade() -> None:
     op.drop_column('users', 'is_verified')

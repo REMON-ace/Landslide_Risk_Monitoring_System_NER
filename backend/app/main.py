@@ -14,44 +14,54 @@ from app.routers import risk, weather, roads, reports, alerts, dashboard, auth, 
 
 from sqlalchemy import text
 
-# Ensure upload directory & database tables exist
+# Keep SQLite developer fallback usable.  PostgreSQL schema changes are owned
+# exclusively by Alembic; startup must not drift a deployed database.
 os.makedirs(settings.upload_dir, exist_ok=True)
-for table in Base.metadata.tables.values():
-    try:
-        table.create(bind=engine, checkfirst=True)
-    except Exception as e:
-        print(f"Table creation note for {table.name}: {e}")
+if engine.dialect.name == "sqlite":
+    for table in Base.metadata.tables.values():
+        try:
+            table.create(bind=engine, checkfirst=True)
+        except Exception as e:
+            print(f"Table creation note for {table.name}: {e}")
 
-# Automatically add missing columns for existing database
-with engine.connect() as conn:
+# Automatically add missing columns for existing database.
+# Uses introspection so it works on both PostgreSQL and SQLite.
+from sqlalchemy import inspect as sa_inspect
+
+def _add_column_if_missing(engine, table: str, column: str, col_type: str, default=None):
+    """Maintain the local SQLite fallback without altering PostgreSQL at startup."""
+    if engine.dialect.name != "sqlite":
+        return
     try:
-        conn.execute(text("ALTER TABLE field_reports ADD COLUMN severity VARCHAR(50) DEFAULT 'medium'"))
-        conn.commit()
-    except Exception:
-        pass
+        insp = sa_inspect(engine)
+        if table not in insp.get_table_names():
+            return  # table doesn't exist yet — will be created by metadata.create_all
+        existing = {c["name"] for c in insp.get_columns(table)}
+        if column in existing:
+            return
+        default_clause = f" DEFAULT {default}" if default is not None else ""
+        with engine.connect() as conn:
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause}"))
+            conn.commit()
+        print(f"Migration: added {table}.{column}")
+    except Exception as e:
+        print(f"Migration note ({table}.{column}): {e}")
+
+_add_column_if_missing(engine, "field_reports", "severity", "VARCHAR(50)", "'medium'")
+_add_column_if_missing(engine, "users", "is_verified", "BOOLEAN", "FALSE")
+_add_column_if_missing(engine, "users", "proof_path", "VARCHAR(500)")
+_add_column_if_missing(engine, "users", "created_at",
+                       "DATETIME", "CURRENT_TIMESTAMP")
+_add_column_if_missing(engine, "alerts", "lat", "FLOAT")
+_add_column_if_missing(engine, "alerts", "lng", "FLOAT")
+_add_column_if_missing(engine, "alerts", "description", "TEXT")
+
+# Back-fill nulls
+if engine.dialect.name == "sqlite":
     try:
-        conn.execute(text("UPDATE field_reports SET severity = 'medium' WHERE severity IS NULL OR severity = ''"))
-        conn.commit()
-    except Exception:
-        pass
-    try:
-        conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE"))
-        conn.commit()
-    except Exception:
-        pass
-    try:
-        conn.execute(text("ALTER TABLE users ADD COLUMN proof_path VARCHAR(500)"))
-        conn.commit()
-    except Exception:
-        pass
-    try:
-        conn.execute(text("ALTER TABLE alerts ADD COLUMN lat FLOAT"))
-        conn.commit()
-    except Exception:
-        pass
-    try:
-        conn.execute(text("ALTER TABLE alerts ADD COLUMN lng FLOAT"))
-        conn.commit()
+        with engine.connect() as conn:
+            conn.execute(text("UPDATE field_reports SET severity = 'medium' WHERE severity IS NULL OR severity = ''"))
+            conn.commit()
     except Exception:
         pass
 
@@ -73,11 +83,12 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
+        "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
-        "https://landslide-risk-monitoring-system-ner.onrender.com",
+        "http://127.0.0.1:3001",
+        "https://landslide-risk-monitoring-system-ner.vercel.app",
     ],
-    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
