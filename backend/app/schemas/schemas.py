@@ -53,6 +53,8 @@ class PredictRiskIn(BaseModel):
 class PredictRiskOut(BaseModel):
     risk_score: float
     severity: str
+    model_source: str
+    model_version: str
 
 
 class RiskHistoryPoint(BaseModel):
@@ -253,6 +255,11 @@ class LoginOut(BaseModel):
     token: str
     role: str
     district: Optional[str]
+    is_verified: bool = False
+
+
+class GoogleAuthIn(BaseModel):
+    credential: str
 
 # Registration schemas
 class UserRegisterIn(BaseModel):

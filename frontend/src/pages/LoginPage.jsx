@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import { ShieldCheck, LogIn, Key, User, AlertCircle, Database, Check } from 'lucide-react';
 
 const BACKEND_DEMO_CREDENTIALS = {
@@ -13,7 +14,7 @@ const BACKEND_DEMO_CREDENTIALS = {
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const { login, isAuthenticated, isOfficial } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, isOfficial } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -66,6 +67,18 @@ export default function LoginPage() {
     setError(null);
     setQuickFillApplied(true);
     setTimeout(() => setQuickFillApplied(false), 2000);
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await loginWithGoogle(credential);
+    } catch (err) {
+      setError(err.message || 'Google sign-in failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -147,6 +160,13 @@ export default function LoginPage() {
             <span>{isSubmitting ? 'Authenticating...' : 'Sign In to Operations Console'}</span>
           </button>
         </form>
+
+        <div className="flex items-center gap-3 text-xs text-slate-400">
+          <span className="h-px flex-1 bg-[#D9E2DE] dark:bg-[#27272A]" />
+          <span>or</span>
+          <span className="h-px flex-1 bg-[#D9E2DE] dark:bg-[#27272A]" />
+        </div>
+        <GoogleSignInButton onCredential={handleGoogleCredential} disabled={isSubmitting} />
 
         {/* Residency Verification & Register Link */}
         <div className="p-3.5 rounded-xl bg-[#EAF5F0] dark:bg-emerald-950/20 border border-[#006B4F]/20 dark:border-emerald-500/30 text-center space-y-2">

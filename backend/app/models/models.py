@@ -234,3 +234,16 @@ class User(Base):
     proof_path = Column(String(500), nullable=True)
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    email = Column(String(254), unique=True, nullable=True, index=True)
+    google_sub = Column(String(255), unique=True, nullable=True, index=True)
+
+
+class UserDevice(Base):
+    """A browser's FCM registration token, linked to exactly one user."""
+    __tablename__ = "user_devices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    fcm_token = Column(String(512), unique=True, nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

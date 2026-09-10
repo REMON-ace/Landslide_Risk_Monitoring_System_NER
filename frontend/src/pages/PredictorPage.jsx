@@ -39,19 +39,25 @@ export default function PredictorPage() {
 
   const [features, setFeatures] = useState(defaultFeatures);
   const [prediction, setPrediction] = useState(null);
+  const [error, setError] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
 
   const handleSlider = (key, val) => {
     setFeatures((prev) => ({ ...prev, [key]: parseFloat(val) }));
+    setPrediction(null);
+    setError(null);
   };
 
   const handleRunPredict = async () => {
     setIsRunning(true);
+    setError(null);
     try {
       const res = await predictRisk(features);
       setPrediction(res);
     } catch (err) {
       console.error('Prediction failed:', err);
+      setPrediction(null);
+      setError(err.message || 'Unable to generate a prediction.');
     } finally {
       setIsRunning(false);
     }
@@ -60,6 +66,7 @@ export default function PredictorPage() {
   const resetFeatures = () => {
     setFeatures(defaultFeatures);
     setPrediction(null);
+    setError(null);
   };
 
   const sliders = [
@@ -166,8 +173,13 @@ export default function PredictorPage() {
           <SectionCard
             kicker="Evaluation Output"
             title="Hazard Score & Advisory"
-            subtitle="Calculated response from empirical slope model"
+            subtitle="Server-side trained-model evaluation"
           >
+            {error && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                {error}
+              </div>
+            )}
             {prediction ? (
               <div className="space-y-5">
                 {/* Visual Gauge Header */}
@@ -181,6 +193,9 @@ export default function PredictorPage() {
                   <div>
                     <RiskBadge severity={prediction.severity} size="md" />
                   </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
+                    {prediction.model_source === 'trained_model' ? 'Trained ML model' : 'Empirical fallback'} · {prediction.model_version}
+                  </p>
                 </div>
 
                 {/* Advisory Recommendations */}

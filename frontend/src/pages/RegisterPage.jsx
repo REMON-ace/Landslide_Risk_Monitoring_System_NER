@@ -1,7 +1,8 @@
 // RegisterPage.jsx – residency‑verified user registration
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register } from '../api/client';
+import { register, registerWithGoogle } from '../api/client';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import { useTranslation } from 'react-i18next';
 import { User, ShieldCheck, AlertCircle, Check } from 'lucide-react';
 
@@ -52,6 +53,29 @@ export default function RegisterPage() {
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       setError(err.message || 'Registration failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    setError(null);
+    setSuccess(null);
+    if (!proofFile) {
+      setError('Choose a residency proof document before continuing with Google.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('credential', credential);
+      formData.append('district', district);
+      formData.append('proof', proofFile);
+      await registerWithGoogle(formData);
+      setSuccess('Google registration submitted! Your account is pending residency verification.');
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err) {
+      setError(err.message || 'Google sign-in failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -161,6 +185,13 @@ export default function RegisterPage() {
             {isSubmitting ? 'Submitting...' : 'Create Account'}
           </button>
         </form>
+
+        <div className="flex items-center gap-3 text-xs text-slate-400">
+          <span className="h-px flex-1 bg-[#D9E2DE] dark:bg-[#27272A]" />
+          <span>or</span>
+          <span className="h-px flex-1 bg-[#D9E2DE] dark:bg-[#27272A]" />
+        </div>
+        <GoogleSignInButton onCredential={handleGoogleCredential} disabled={isSubmitting} />
 
         <div className="text-center text-xs text-slate-500 dark:text-zinc-400">
           Already have an account?{' '}

@@ -21,6 +21,10 @@ from functools import lru_cache
 import joblib
 import numpy as np
 
+
+class ModelUnavailableError(RuntimeError):
+    """Raised when trained-model inference is unavailable and fallback is disabled."""
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 # Adjust this path to wherever you place the model files in your backend repo.
 # By default it looks for a "models/" folder next to this file.
@@ -61,7 +65,12 @@ def _load_feature_order():
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-def predict_risk(features: dict) -> dict:
+def predict_risk(
+    features: dict,
+    *,
+    allow_empirical_fallback: bool = False,
+    model_version: str = "unversioned",
+) -> dict:
     """
     Predict landslide risk for a single location using XGBoost model or empirical fallback.
     """
@@ -85,9 +94,15 @@ def predict_risk(features: dict) -> dict:
             return {
                 "risk_score": round(proba, 4),
                 "severity":   severity,
+                "model_source": "trained_model",
+                "model_version": model_version,
             }
-    except Exception as e:
-        print(f"[NOTE] ML Model inference fallback triggered: {e}")
+    except Exception as exc:
+        if not allow_empirical_fallback:
+            raise ModelUnavailableError(
+                "The trained landslide model is unavailable; no prediction was generated."
+            ) from exc
+        print(f"[WARNING] Development empirical fallback triggered: {exc}")
 
     # Physical empirical heuristic model fallback
     slope = float(features.get("slope", 25.0))
@@ -112,6 +127,8 @@ def predict_risk(features: dict) -> dict:
     return {
         "risk_score": proba,
         "severity": severity,
+        "model_source": "empirical_fallback",
+        "model_version": model_version,
     }
 
 

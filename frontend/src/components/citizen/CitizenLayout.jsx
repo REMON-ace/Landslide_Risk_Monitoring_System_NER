@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
+import AiRiskAssistant from '../admin/AiRiskAssistant';
+import { listenForForegroundNotifications } from '../../services/firebaseMessaging';
+import { emergencyAudio } from '../../utils/emergencyAudio';
 import { SUPPORTED_LANGUAGES } from '../../i18n/index';
 import {
   LayoutDashboard, Map, FileText, Bell, X, ChevronLeft, ChevronRight,
@@ -39,6 +42,21 @@ export default function CitizenLayout() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => listenForForegroundNotifications(async (payload) => {
+    const notification = payload.notification || {};
+    emergencyAudio.playEmergencySignal();
+    navigator.vibrate?.([300, 100, 300, 100, 600]);
+
+    if (Notification.permission === 'granted') {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification(notification.title || 'Landslide alert', {
+        body: notification.body || 'New safety information is available.',
+        icon: '/logo.png',
+        data: payload.data || { url: '/citizen/alerts' },
+      });
+    }
+  }), []);
 
   const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
 
@@ -302,6 +320,9 @@ export default function CitizenLayout() {
           </div>
         </footer>
       </div>
+
+      {/* Shared assistant: same live-data/Gemini endpoint as the admin portal. */}
+      <AiRiskAssistant showAdminActions={false} />
     </div>
   );
 }

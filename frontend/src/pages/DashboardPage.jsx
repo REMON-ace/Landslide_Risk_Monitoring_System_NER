@@ -902,12 +902,6 @@ export default function DashboardPage() {
 
       {/* ── Glowing AI Assistant (Floating Desktop & Mobile) ─────────── */}
       <AiRiskAssistant
-        zones={zones}
-        roads={roads}
-        alerts={alerts}
-        weather={weather}
-        soilSensors={soilSensors}
-        reports={reports}
         onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenSituationModal={() => setIsSituationModalOpen(true)}
       />

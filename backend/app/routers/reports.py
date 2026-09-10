@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.schemas import FieldReportOut, FieldReportCreatedOut, FieldReportPatchIn
 from app.services import reports_service
-from app.core.security import require_admin
+from app.core.security import get_current_user
 
 router = APIRouter()
 
@@ -27,6 +27,7 @@ async def create_field_report(
     severity: Optional[str] = Form("medium"),
     photo: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
     # Parse timestamp
     ts: Optional[datetime] = None
@@ -50,7 +51,12 @@ async def create_field_report(
         lng=lng,
         description=description,
         photo_url=photo_url,
-        reporter_type=reporter_type,
+        # Never trust a client-supplied reporter type for public alert delivery.
+        reporter_type=(
+            "official"
+            if current_user.get("role") in ("district_admin", "field_official")
+            else "citizen"
+        ),
         language=language,
         client_report_id=client_report_id,
         timestamp=ts,

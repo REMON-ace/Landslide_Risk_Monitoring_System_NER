@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.8",
+    "firebase": "^11.10.0",
     "i18next": "^24.2.0",
     "idb": "^8.0.2",
     "leaflet": "^1.9.4",
