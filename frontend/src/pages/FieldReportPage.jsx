@@ -36,6 +36,14 @@ export default function FieldReportPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4500);
+  };
 
   const loadReports = async () => {
     setIsLoading(true);
@@ -59,9 +67,15 @@ export default function FieldReportPage() {
       prev.map((r) => (r.report_id === reportId ? { ...r, status: newStatus } : r))
     );
     try {
-      await updateFieldReportStatus(reportId, newStatus);
+      const res = await updateFieldReportStatus(reportId, newStatus);
+      if (newStatus === 'verified') {
+        showToast(`Report ${reportId} verified! Regional risk score elevated & GIS map markers updated.`, 'success');
+      } else if (newStatus === 'dismissed') {
+        showToast(`Report ${reportId} marked as dismissed.`, 'info');
+      }
     } catch (err) {
       console.error('Failed to update report status:', err);
+      showToast(`Failed to update report ${reportId}. Please retry.`, 'error');
       loadReports();
     }
   };
@@ -73,6 +87,7 @@ export default function FieldReportPage() {
     );
     try {
       await updateFieldReportStatus(reportId, null, newSeverity);
+      showToast(`Severity for ${reportId} adjusted to ${newSeverity.toUpperCase()}.`, 'info');
     } catch (err) {
       console.error('Failed to update report severity:', err);
       loadReports();
@@ -85,6 +100,7 @@ export default function FieldReportPage() {
     setReports((prev) => prev.map((r) => r.report_id === reportId ? { ...r, status: 'archived' } : r));
     try {
       await deleteFieldReport(reportId);
+      showToast(`Report ${reportId} archived from review feed.`, 'info');
     } catch (err) {
       console.error('Failed to archive report:', err);
       loadReports();
@@ -103,7 +119,25 @@ export default function FieldReportPage() {
   const receivedCount = reports.filter((r) => r.status === 'received').length;
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-16 relative">
+      {/* ── Toast Notification Banner ────────────────────────────── */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-semibold backdrop-blur-md border transition-all animate-in fade-in slide-in-from-top-4 duration-300 ${
+          toast.type === 'success'
+            ? 'bg-emerald-900/90 text-white border-emerald-500/50 shadow-emerald-950/40'
+            : toast.type === 'error'
+            ? 'bg-red-900/90 text-white border-red-500/50 shadow-red-950/40'
+            : 'bg-slate-900/90 text-white border-slate-700 shadow-black/40'
+        }`}>
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          ) : (
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          )}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       {/* ── Page Header ─────────────────────────────────────────── */}
       <PageHeader
         kicker={t('field_report_page.kicker', { defaultValue: 'Field Operations & Citizen Science' })}

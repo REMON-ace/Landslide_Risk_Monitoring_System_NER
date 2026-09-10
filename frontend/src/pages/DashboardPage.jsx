@@ -596,6 +596,8 @@ export default function DashboardPage() {
                   zones={zones}
                   roads={roads}
                   villages={villages}
+                  alerts={alerts}
+                  reports={reports}
                   selectedZoneId={selectedZone?.zone_id}
                   onSelectZone={setSelectedZone}
                   onUpdateRoadStatus={handleUpdateRoadStatus}

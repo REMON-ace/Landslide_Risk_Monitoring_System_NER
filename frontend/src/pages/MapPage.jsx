@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getRiskZones, getRoads, getVillages, getAlerts, updateRoadStatus } from '../api/client';
+import { getRiskZones, getRoads, getVillages, getAlerts, getFieldReports, updateRoadStatus } from '../api/client';
 import MapView from '../components/MapView';
 import ZoneDetailDrawer from '../components/ZoneDetailDrawer';
 import CreateAlertModal from '../components/CreateAlertModal';
@@ -16,6 +16,7 @@ export default function MapPage() {
   const [roads, setRoads] = useState([]);
   const [villages, setVillages] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [reports, setReports] = useState([]);
   const [selectedZone, setSelectedZone] = useState(null);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [filterSeverity, setFilterSeverity] = useState('all');
@@ -26,17 +27,19 @@ export default function MapPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [zonesData, roadsData, villData, alertsData] = await Promise.all([
+      const [zonesData, roadsData, villData, alertsData, reportsData] = await Promise.all([
         getRiskZones(),
         getRoads(),
         getVillages(),
         getAlerts().catch(() => []),
+        getFieldReports().catch(() => []),
       ]);
       const loadedZones = zonesData || [];
       setZones(loadedZones);
       setRoads(roadsData || []);
       setVillages(villData || []);
       setAlerts(alertsData || []);
+      setReports(reportsData || []);
 
       // Check URL parameters for focus coordinates / zone selection
       const paramLat = searchParams.get('lat') ? parseFloat(searchParams.get('lat')) : null;
@@ -162,6 +165,7 @@ export default function MapPage() {
             roads={roads}
             villages={villages}
             alerts={alerts}
+            reports={reports}
             selectedZoneId={selectedZone?.zone_id}
             onSelectZone={(z) => setSelectedZone(z)}
             onUpdateRoadStatus={handleUpdateRoadStatus}

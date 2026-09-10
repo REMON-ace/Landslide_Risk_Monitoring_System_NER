@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from geoalchemy2.functions import ST_X, ST_Y
-from app.models.models import FieldReport, ReportStatusEnum, ReporterTypeEnum, SeverityEnum, Zone, Alert
+from app.models.models import FieldReport, ReportStatusEnum, ReporterTypeEnum, SeverityEnum, Zone, Alert, RiskHistory
 from app.core.config import settings
 from app.db.session import engine
 
@@ -175,6 +175,110 @@ def get_reports(
     return [_report_to_dict(r) for r in reports]
 
 
+def _find_nearest_zone(db: Session, lat: float, lng: float) -> Optional[Zone]:
+    """Find the nearest Zone to the given coordinates."""
+    if engine.dialect.name == "sqlite":
+        candidates = db.query(Zone).all()
+        best_zone = None
+        best_dist = float("inf")
+        for z in candidates:
+            if z.geometry and "POINT(" in str(z.geometry):
+                try:
+                    coords = str(z.geometry).replace("POINT(", "").replace(")", "").strip().split()
+                    z_lng, z_lat = float(coords[0]), float(coords[1])
+                    dist = ((z_lat - lat) ** 2 + (z_lng - lng) ** 2) ** 0.5
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_zone = z
+                except Exception:
+                    pass
+        if best_zone:
+            return best_zone
+        return candidates[0] if candidates else None
+    else:
+        from geoalchemy2.functions import ST_X as _stx, ST_Y as _sty
+        candidates = (
+            db.query(
+                Zone,
+                _stx(Zone.geometry).label("z_lng"),
+                _sty(Zone.geometry).label("z_lat"),
+            )
+            .all()
+        )
+        best_zone = None
+        best_dist = float("inf")
+        for z, z_lng, z_lat in candidates:
+            if z_lng is not None and z_lat is not None:
+                dist = ((z_lat - lat) ** 2 + (z_lng - lng) ** 2) ** 0.5
+                if dist < best_dist:
+                    best_dist = dist
+                    best_zone = z
+        if best_zone:
+            return best_zone
+        return candidates[0][0] if candidates else None
+
+
+# Severity-based risk score increments applied when a report is verified
+_VERIFICATION_RISK_BOOST = {
+    "low": 0.05,
+    "medium": 0.10,
+    "high": 0.15,
+    "critical": 0.20,
+}
+
+
+def _apply_verified_report_to_zone(db: Session, report: FieldReport) -> Optional[dict]:
+    """
+    When a field report is verified by admin, boost the nearest zone's risk
+    score and update the corresponding alert's map coordinates.
+    """
+    from app.services.risk_service import score_to_severity
+
+    nearest_zone = _find_nearest_zone(db, report.lat, report.lng)
+    if not nearest_zone:
+        print(f"[NOTE] No zone found near report {report.report_id} ({report.lat}, {report.lng})")
+        return None
+
+    # 1. Boost zone risk score
+    sev_key = report.severity.value if hasattr(report.severity, "value") else str(report.severity)
+    boost = _VERIFICATION_RISK_BOOST.get(sev_key, 0.10)
+    old_score = nearest_zone.current_risk_score or 0.0
+    new_score = round(min(old_score + boost, 1.0), 4)
+    nearest_zone.current_risk_score = new_score
+    nearest_zone.current_severity = SeverityEnum(score_to_severity(new_score))
+    nearest_zone.last_updated = datetime.now(timezone.utc)
+
+    # 2. Record in risk history
+    history_entry = RiskHistory(
+        zone_id=nearest_zone.id,
+        risk_score=new_score,
+        recorded_at=datetime.now(timezone.utc),
+    )
+    db.add(history_entry)
+
+    # 3. Update the auto-created Alert to have report lat/lng + correct zone
+    try:
+        alert_id = f"AL-{report.report_id.replace('FR-', '')}"
+        alert = db.query(Alert).filter(Alert.alert_id == alert_id).first()
+        if alert:
+            alert.lat = report.lat
+            alert.lng = report.lng
+            alert.zone_id = nearest_zone.id
+    except Exception as e:
+        print(f"[NOTE] Alert coordinate update skipped for {report.report_id}: {e}")
+
+    print(f"[VERIFIED] Report {report.report_id} → zone {nearest_zone.zone_id} "
+          f"risk {old_score:.2f} → {new_score:.2f} ({nearest_zone.current_severity.value})")
+
+    return {
+        "zone_id": nearest_zone.zone_id,
+        "village_name": nearest_zone.village_name,
+        "previous_score": old_score,
+        "new_score": new_score,
+        "severity": nearest_zone.current_severity.value,
+    }
+
+
 def patch_report(db: Session, report_id: str, status: Optional[str] = None, severity: Optional[str] = None) -> Optional[dict]:
     report = db.query(FieldReport).filter(FieldReport.report_id == report_id).first()
     if not report:
@@ -191,6 +295,14 @@ def patch_report(db: Session, report_id: str, status: Optional[str] = None, seve
                 alert.severity = SeverityEnum(severity)
         except Exception as e:
             print(f"[NOTE] Failed to sync alert severity for {report_id}: {e}")
+
+    # When a report is verified, update the nearest zone's risk score and map data
+    if status == "verified":
+        try:
+            _apply_verified_report_to_zone(db, report)
+        except Exception as e:
+            print(f"[NOTE] Risk zone update failed for {report_id}: {e}")
+
     db.commit()
     db.refresh(report)
     return _report_to_dict(report)

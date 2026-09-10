@@ -193,6 +193,10 @@ class FieldReport(Base):
     language = Column(String(20), default="en")
     status = Column(Enum(ReportStatusEnum), default=ReportStatusEnum.received)
     severity = Column(Enum(SeverityEnum), default=SeverityEnum.medium, nullable=True)
+    hazard_category = Column(String(100), nullable=True, default="general_hazard")
+    ai_analysis = Column(Text, nullable=True)
+    confidence = Column(Float, nullable=True, default=0.85)
+    recommended_action = Column(Text, nullable=True)
     submitted_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 

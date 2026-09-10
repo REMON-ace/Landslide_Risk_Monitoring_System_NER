@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     cloudinary_api_key: str = ""
     cloudinary_api_secret: str = ""
 
+    # Google Gemini API Key for AI Hazard Problem Classification & Vision Analysis
+    gemini_api_key: str = ""
+
     class Config:
         env_file = ".env"
         extra = "ignore"

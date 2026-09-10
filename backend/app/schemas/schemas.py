@@ -142,6 +142,10 @@ class FieldReportOut(BaseModel):
     photo_url: Optional[str]
     status: str
     severity: Optional[str] = "medium"
+    hazard_category: Optional[str] = "general_hazard"
+    ai_analysis: Optional[str] = None
+    confidence: Optional[float] = 0.85
+    recommended_action: Optional[str] = None
     reporter_type: str
     timestamp: datetime
 
@@ -153,12 +157,18 @@ class FieldReportCreatedOut(BaseModel):
     report_id: str
     status: str
     severity: Optional[str] = "medium"
+    hazard_category: Optional[str] = "general_hazard"
+    ai_analysis: Optional[str] = None
+    confidence: Optional[float] = 0.85
+    recommended_action: Optional[str] = None
     photo_url: Optional[str]
 
 
 class FieldReportPatchIn(BaseModel):
-    status: Optional[str] = None    # "received" | "verified" | "dismissed"
-    severity: Optional[str] = None  # "low" | "medium" | "high" | "critical"
+    status: Optional[str] = None             # "received" | "verified" | "dismissed" | "archived"
+    severity: Optional[str] = None           # "low" | "medium" | "high" | "critical"
+    hazard_category: Optional[str] = None
+    recommended_action: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

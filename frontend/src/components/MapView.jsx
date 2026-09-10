@@ -6,7 +6,8 @@ import RiskHeatmap from './RiskHeatmap';
 import RoadOverlay from './RoadOverlay';
 import VillageMarkers from './VillageMarkers';
 import AlertOverlay from './AlertOverlay';
-import { Layers, Eye, EyeOff, Map, Satellite, Bell } from 'lucide-react';
+import VerifiedReportsOverlay from './VerifiedReportsOverlay';
+import { Layers, Eye, EyeOff, Map, Satellite, Bell, Camera } from 'lucide-react';
 
 /*
  * BASE TILE PROVIDERS — All free, clean, NO API KEY required.
@@ -67,6 +68,8 @@ export default function MapView({
   roads = [],
   villages = [],
   alerts = [],
+  reports = [],
+  verifiedReports = null,
   selectedZoneId = null,
   onSelectZone,
   onUpdateRoadStatus,
@@ -77,8 +80,14 @@ export default function MapView({
   const { t } = useTranslation();
   const { isDark } = useTheme();
 
+  // Consolidate verified reports list
+  const activeVerifiedReports = (verifiedReports || reports || []).filter(
+    (r) => r.status === 'verified' || !r.status
+  );
+
   // Layer visibility state
   const [showHeatmap, setShowHeatmap] = useState(true);
+  const [showVerifiedReports, setShowVerifiedReports] = useState(true);
   const [showRoads, setShowRoads] = useState(true);
   const [showVillages, setShowVillages] = useState(true);
   const [showAlerts, setShowAlerts] = useState(true);
@@ -112,7 +121,7 @@ export default function MapView({
         {/* Section label */}
         <span className="flex items-center gap-1.5 px-2 py-1 font-bold text-[#006B4F] dark:text-emerald-400 border-r border-[#D9E2DE] dark:border-zinc-800">
           <Layers className="w-3.5 h-3.5 text-[#006B4F] dark:text-emerald-400" />
-          <span>{t('map_view.gis_layers')}</span>
+          <span>{t('map_view.gis_layers', 'GIS Layers')}</span>
         </span>
 
         {/* ── Base Map Switcher: Standard / Satellite ── */}
@@ -154,7 +163,23 @@ export default function MapView({
           }`}
         >
           {showHeatmap ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          <span>{t('map_view.risk_heatmap')}</span>
+          <span>{t('map_view.risk_heatmap', 'Risk Heatmap')}</span>
+        </button>
+
+        <button
+          onClick={() => setShowVerifiedReports(!showVerifiedReports)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium transition-all ${
+            showVerifiedReports ? activeBtn : inactiveBtn
+          }`}
+        >
+          {showVerifiedReports ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+          <Camera className="w-3 h-3" />
+          <span>{t('map_view.verified_reports', 'Verified Reports')}</span>
+          {activeVerifiedReports.length > 0 && (
+            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#008060] text-white text-[9px] font-extrabold shadow-xs">
+              {activeVerifiedReports.length}
+            </span>
+          )}
         </button>
 
         <button
@@ -164,7 +189,7 @@ export default function MapView({
           }`}
         >
           {showAlerts ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          <span>Directives</span>
+          <span>{t('map_view.directives', 'Directives')}</span>
           {alerts.length > 0 && (
             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-600 text-white text-[9px] font-extrabold animate-pulse shadow-xs">
               {alerts.length} Active
@@ -179,7 +204,7 @@ export default function MapView({
           }`}
         >
           {showRoads ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          <span>{t('map_view.road_corridors')}</span>
+          <span>{t('map_view.road_corridors', 'Roads')}</span>
           {roads.filter((r) => r.status === 'blocked' || r.status === 'partial').length > 0 && (
             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#E63946] text-white text-[9px] font-extrabold animate-pulse shadow-xs">
               {roads.filter((r) => r.status === 'blocked' || r.status === 'partial').length} Blocked
@@ -194,7 +219,7 @@ export default function MapView({
           }`}
         >
           {showVillages ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          <span>{t('map_view.villages')}</span>
+          <span>{t('map_view.villages', 'Villages')}</span>
         </button>
       </div>
 
@@ -233,11 +258,14 @@ export default function MapView({
         </div>
 
         <div className="pt-1.5 border-t border-[#D9E2DE] dark:border-zinc-800 flex flex-wrap items-center gap-2.5 text-[10px]">
+          <span className="flex items-center gap-1 font-bold text-[#006B4F] dark:text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-[#008060] inline-block" /> 📷 Verified Report
+          </span>
           <span className="flex items-center gap-1 font-bold text-purple-700 dark:text-purple-400">
-            <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse inline-block" /> 📡 Alert Directive
+            <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse inline-block" /> 📡 Directive
           </span>
           <span className="flex items-center gap-1 font-bold text-red-600 dark:text-red-400">
-            <span className="w-2 h-2 rounded-full bg-[#E63946] animate-pulse inline-block" /> 🚧 Road Blockage
+            <span className="w-2 h-2 rounded-full bg-[#E63946] animate-pulse inline-block" /> 🚧 Blockage
           </span>
         </div>
       </div>
@@ -283,6 +311,11 @@ export default function MapView({
             selectedZoneId={selectedZoneId}
             onSelectZone={onSelectZone}
           />
+        )}
+
+        {/* Verified field incident reports overlay */}
+        {showVerifiedReports && (
+          <VerifiedReportsOverlay reports={activeVerifiedReports} />
         )}
 
         {/* Admin alerts & public directives overlay */}
